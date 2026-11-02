@@ -28,6 +28,9 @@ As a student who use ai for suggestions on my daily studies, I want my agent to 
 on LMS itself
 So that I don't need to manually download them to my local device and send them to my agent.
 
+As a student who use AI and allow agent to use my personal LMS, I want them to operate my LMS safely and never do
+unauthorized operations without my consent.
+
 - information about the API(s) that your project uses
   Canvas api documents: https://developerdocs.instructure.com/services/canvas
   Outlook Graph API documents: https://learn.microsoft.com/en-us/graph/use-the-api
