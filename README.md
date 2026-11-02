@@ -14,8 +14,10 @@ events such as Assignments with Due Date, special events host by university/ aff
 
 I am a student who do not want to check canvas app frequently, rather, I would like to receive a daily email notification
 about my new canvas notifications
+
 I am a student who want to have a straight forward visualization of my tasks for the next month, so I can prioritize
 some over others.
+
 I am a student with bad time organizing skills, I would like a automated sorting of my tasks so I can just stick to it.
 
 - information about the API(s) that your project uses
