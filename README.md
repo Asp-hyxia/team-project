@@ -12,16 +12,25 @@ events such as Assignments with Due Date, special events host by university/ aff
 
 - a list of the user stories, along with who is responsible for each one
 
-I am a student who do not want to check canvas app frequently, rather, I would like to receive a daily email notification
-about my new canvas notifications
+As a student who want to have a straight forward visualization of my tasks and upcoming due dates,
+So I can prioritize some over others.
 
-I am a student who want to have a straight forward visualization of my tasks for the next month, so I can prioritize
-some over others.
+As a student, I want to manage my todo list at a unified platform.
+So that I don't need to switch between office365, canvas and other todo list apps on my devices.
 
-I am a student with bad time organizing skills, I would like a automated sorting of my tasks so I can just stick to it.
+As a student using Canvas everyday, I want to integrate AI into my LMS 
+So that I don't need to read through every email and navigating between different course pages gathering information.
+
+As a student, I want to get notification before every important deadline
+So that I don't accidentally miss an important due or event.
+
+As a student who use ai for suggestions on my daily studies, I want my agent to browse and get all the files posted
+on LMS itself
+So that I don't need to manually download them to my local device and send them to my agent.
 
 - information about the API(s) that your project uses
   Canvas api documents: https://developerdocs.instructure.com/services/canvas
+  Outlook Graph API documents: https://learn.microsoft.com/en-us/graph/use-the-api
 
 - screenshots or animations demonstrating current functionality
 
