@@ -6,8 +6,9 @@ Please keep this up-to-date with information about your project throughout the t
 The readme should include information such as:
 - a summary of what your application is all about
 
-An information/notification gatherer indented for university students(in particular UofT students) to keep track of daily
-events such as Assignments with Due Date, special events host by university/ affiliations, or Upcoming test/quizes.
+An information/notification gatherer integrated with AI Agent indented for university students (in particular 
+institutions use Canvas LMS as their primary platform for teaching and communicating) to keep track of daily events 
+such as Assignments, Due Dates, Exams, Events, tests/quizzes, Notifications from their university / affiliations.
 
 
 - a list of the user stories, along with who is responsible for each one
