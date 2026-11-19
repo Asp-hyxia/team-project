@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import entity.CourseResource;
+import use_case.ask_page.PageGateway;
+import use_case.ask_page.PageContent;
+import use_case.ask_page.AskPageException;
 import use_case.find_resources.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -21,12 +24,18 @@ import java.util.concurrent.Executors;
 public final class CanvasMcpServer implements AutoCloseable {
     public static final String VERSION = "2025-03-26";
     private final ResourceGateway resources;
+    private final PageGateway pages;
     private final String bearer;
     private final HttpServer server;
     private final ExecutorService workers = Executors.newFixedThreadPool(2);
     private final ObjectMapper json = new ObjectMapper();
 
     public CanvasMcpServer(ResourceGateway resources, String bearer) throws IOException {
+        this(resources, resources instanceof PageGateway ? (PageGateway) resources : null, bearer);
+    }
+
+    public CanvasMcpServer(ResourceGateway resources, PageGateway pages, String bearer) throws IOException {
+        this.pages = pages;
         if (bearer == null || bearer.isBlank()) { throw new IllegalArgumentException("MCP credential required."); }
         this.resources = resources; this.bearer = bearer;
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -65,7 +74,7 @@ public final class CanvasMcpServer implements AutoCloseable {
                     result = Map.of("protocolVersion", VERSION, "capabilities", Map.of("tools", Map.of()),
                             "serverInfo", Map.of("name", "academic-assistant-canvas", "version", "1.0")); break;
                 case "ping": result = Map.of(); break;
-                case "tools/list": result = Map.of("tools", toolDefinitions()); break;
+                case "tools/list": result = Map.of("tools", availableTools()); break;
                 case "tools/call":
                     try { result = toolResult(call(request.path("params"))); }
                     catch (DiscoveryException exception) {
@@ -107,7 +116,40 @@ public final class CanvasMcpServer implements AutoCloseable {
             }
             return Map.of("items", items, "warnings", listing.getWarnings());
         }
+        if ("read_page".equals(name) && pages != null && args.size() == 2
+                && args.path("course_id").isIntegralNumber() && args.path("course_id").canConvertToLong()
+                && args.path("course_id").asLong() > 0 && args.path("page_slug").isTextual()) {
+            if (resources.listCourses().stream().noneMatch(course -> course.getId() == args.path("course_id").asLong())) {
+                throw new DiscoveryException(DiscoveryException.Code.PERMISSION_DENIED);
+            }
+            try {
+                PageContent page = pages.readPage(args.path("course_id").asLong(), args.path("page_slug").asText());
+                return Map.of("course_id", page.courseId, "page_slug", page.slug, "title", page.title,
+                        "text", page.text, "source_url", page.source.toString());
+            }
+            catch (AskPageException exception) {
+                DiscoveryException.Code code;
+                switch (exception.getCode()) {
+                    case PERMISSION_DENIED: code = DiscoveryException.Code.PERMISSION_DENIED; break;
+                    case INVALID_INPUT: code = DiscoveryException.Code.INVALID_INPUT; break;
+                    case INVALID_RESPONSE: code = DiscoveryException.Code.INVALID_RESPONSE; break;
+                    default: code = DiscoveryException.Code.UNAVAILABLE;
+                }
+                throw new DiscoveryException(code);
+            }
+        }
         throw new DiscoveryException(DiscoveryException.Code.INVALID_INPUT);
+    }
+    private List<Map<String, Object>> availableTools() {
+        List<Map<String, Object>> definitions = new ArrayList<>(toolDefinitions());
+        if (pages != null) {
+            definitions.add(Map.of("name", "read_page", "description", "Read an authorized Canvas Page body.",
+                    "inputSchema", Map.of("type", "object", "properties", Map.of(
+                            "course_id", Map.of("type", "integer", "minimum", 1),
+                            "page_slug", Map.of("type", "string")),
+                            "required", List.of("course_id", "page_slug"), "additionalProperties", false)));
+        }
+        return definitions;
     }
     private Map<String, Object> toolResult(Map<String, Object> data) throws IOException {
         // Text JSON supports protocol 2025-03-26 clients; structuredContent also supports newer hosts.

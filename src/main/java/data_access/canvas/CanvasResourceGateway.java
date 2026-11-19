@@ -2,6 +2,9 @@ package data_access.canvas;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import use_case.ask_page.PageGateway;
+import use_case.ask_page.PageContent;
+import use_case.ask_page.AskPageException;
 import entity.Course;
 import entity.CourseResource;
 import use_case.find_resources.DiscoveryException;
@@ -23,7 +26,7 @@ import java.util.regex.Pattern;
 import static use_case.find_resources.DiscoveryException.Code.*;
 
 /** Canvas GET-only adapter. Tokens never leave the configured origin or enter output DTOs. */
-public final class CanvasResourceGateway implements ResourceGateway {
+public final class CanvasResourceGateway implements ResourceGateway, PageGateway {
     private static final Pattern NEXT = Pattern.compile("<([^>]+)>;\\s*rel=\"next\"");
     private static final int MAX_PAGES = 20;
     private final URI origin;
@@ -100,6 +103,57 @@ public final class CanvasResourceGateway implements ResourceGateway {
         if (successfulSections == 0) { throw firstFailure; }
         return new ResourceListing(resources, warnings);
     }
+    @Override
+    public PageContent readPage(long courseId, String slug) throws AskPageException {
+        if (courseId <= 0 || !PageContent.isValidSlug(slug)) {
+            throw new AskPageException(AskPageException.Code.INVALID_INPUT);
+        }
+        try {
+            if (listCourses().stream().noneMatch(course -> course.getId() == courseId)) {
+                throw new AskPageException(AskPageException.Code.PERMISSION_DENIED);
+            }
+            URI endpoint = new URI(origin.getScheme(), origin.getAuthority(),
+                    "/api/v1/courses/" + courseId + "/pages/" + slug, null, null);
+            HttpRequest request = HttpRequest.newBuilder(endpoint).timeout(Duration.ofSeconds(20))
+                    .header("Authorization", "Bearer " + token).header("Accept", "application/json").GET().build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 401 || response.statusCode() == 403) {
+                throw new AskPageException(AskPageException.Code.PERMISSION_DENIED);
+            }
+            if (response.statusCode() != 200) {
+                throw new AskPageException(AskPageException.Code.PAGE_UNAVAILABLE);
+            }
+            JsonNode page = json.readTree(response.body());
+            if (page == null || !page.isObject() || !slug.equals(page.path("url").asText())) {
+                throw new AskPageException(AskPageException.Code.INVALID_RESPONSE);
+            }
+            if (page.path("locked_for_user").asBoolean() || !page.path("published").asBoolean(true)) {
+                throw new AskPageException(AskPageException.Code.PERMISSION_DENIED);
+            }
+            if (!page.path("title").isTextual() || !page.path("body").isTextual()
+                    || page.path("title").asText().isBlank() || page.path("body").asText().isBlank()) {
+                throw new AskPageException(AskPageException.Code.INVALID_RESPONSE);
+            }
+            return new PageContent(courseId, slug, page.path("title").asText(), page.path("body").asText(),
+                    source("/courses/" + courseId + "/pages/" + slug));
+        }
+        catch (DiscoveryException exception) {
+            AskPageException.Code code = exception.getCode() == PERMISSION_DENIED
+                    ? AskPageException.Code.PERMISSION_DENIED : AskPageException.Code.PAGE_UNAVAILABLE;
+            throw new AskPageException(code);
+        }
+        catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new AskPageException(AskPageException.Code.PAGE_UNAVAILABLE);
+        }
+        catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
+            throw new AskPageException(AskPageException.Code.INVALID_RESPONSE);
+        }
+        catch (IOException | URISyntaxException exception) {
+            throw new AskPageException(AskPageException.Code.PAGE_UNAVAILABLE);
+        }
+    }
+
     private URI source(String path) throws DiscoveryException {
         try {
             // In production this is HTTPS. Local fixture origins use a synthetic HTTPS source.

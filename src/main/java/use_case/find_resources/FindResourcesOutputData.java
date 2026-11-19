@@ -9,11 +9,17 @@ public final class FindResourcesOutputData {
         public CourseData(long id, String name) { this.id = id; this.name = name; }
     }
     public static final class ResourceData {
+        public final long courseId;
+        public final String resourceId;
         public final String title;
         public final String type;
         public final String course;
         public final String sourceUrl;
         public ResourceData(String title, String type, String course, String sourceUrl) {
+            this(0, "", title, type, course, sourceUrl);
+        }
+        public ResourceData(long courseId, String resourceId, String title, String type, String course, String sourceUrl) {
+            this.courseId = courseId; this.resourceId = resourceId;
             this.title = title; this.type = type; this.course = course; this.sourceUrl = sourceUrl;
         }
     }

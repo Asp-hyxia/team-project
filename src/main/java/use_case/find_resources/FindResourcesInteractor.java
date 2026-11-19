@@ -49,7 +49,7 @@ public final class FindResourcesInteractor implements FindResourcesInputBoundary
                 }
                 if (resource.getTitle().toLowerCase(Locale.ROOT).contains(query)
                         && seen.add(resource.getType() + ":" + resource.getId())) {
-                    rows.add(new FindResourcesOutputData.ResourceData(resource.getTitle(),
+                    rows.add(new FindResourcesOutputData.ResourceData(resource.getCourseId(), resource.getId(), resource.getTitle(),
                             resource.getType().name(), course.getName(), resource.getSourceUrl().toString()));
                 }
             }
