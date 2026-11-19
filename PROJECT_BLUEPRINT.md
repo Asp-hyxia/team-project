@@ -1,9 +1,9 @@
 # CSC207 Team Project - Project Blueprint
 
 > **Status:** Draft for team review  
-> **Last revised:** November 17, 2026  
+> **Last revised:** November 18, 2026  
 > **Branch for proposed changes:** `test`  
-> **Ownership:** See [Team Work Split](TEAM_WORK_SPLIT.md). Only Module 2 / UC2 has a confirmed owner; all other owners are `TBD`.
+> **Ownership:** See [Team Work Split](TEAM_WORK_SPLIT.md). M1 / UC3 are claimed by Rosalind Zhou (`@RosalindZhou`); M2 / UC2 are owned by Chris Li (`@chrislxn`). Remaining owners are `TBD`.
 
 ## 1. Project Overview
 
@@ -45,7 +45,7 @@ These are **proposed refinements** of the User Stories in the current `test` bra
 | --- | --- | --- | --- | --- |
 | UC1 | As a student, I want to manage my personal study tasks without switching between apps, so I can keep track of my work. | **Manage Local To-Do** | P0 | TBD |
 | UC2 | As a student, I want to find relevant course Pages and files through the assistant, so I can locate resources without browsing every course. | **Find Canvas Resources** | P0 | **Chris Li (`@chrislxn`)** |
-| UC3 | As a student, I want to ask questions about a Canvas Page, so I can understand course instructions quickly. | **Ask About Canvas Pages** | P0 | TBD |
+| UC3 | As a student, I want to ask questions about a Canvas Page, so I can understand course instructions quickly. | **Ask About Canvas Pages** | P0 | **Rosalind Zhou (`@RosalindZhou`)** |
 | UC4 | As a student, I want to ask questions about PDFs on Canvas, so I can work with course materials without manually downloading and uploading them. | **Ask About Canvas PDFs** | P0 | TBD |
 | UC5 | As a student, I want a summary of recent course announcements, so I can identify important updates. | **Summarize Announcements** | P1 | TBD |
 | UC6 | As a student, I want a briefing of approaching deadlines, so I can prioritize my academic work. | **Generate Deadline Briefing** | P1 | TBD |
@@ -65,7 +65,7 @@ These are **proposed refinements** of the User Stories in the current `test` bra
 - **Boundary:** discovery is read-only and does not require downloading all course resources.
 - **Independent acceptance:** with a real connected account, the user can search for a known course resource and open its Canvas source link. A fake MCP/agent adapter allows unit tests without network access.
 
-### UC3 - Ask About Canvas Pages
+### UC3 - Ask About Canvas Pages (Lead: Rosalind Zhou)
 
 - **Input:** a natural-language question about course information.
 - **Success:** the AI chooses approved MCP tools, retrieves relevant Page content, and answers with the Canvas source link(s).
@@ -135,7 +135,7 @@ Java Swing Views: Chat / Resources / To-Do / Briefing
 
 | Module | Description | Main interface / integration point | Owner |
 | --- | --- | --- | --- |
-| **M1 - AI Agent Core** | LLM API, tool selection, multi-step tool-calling loop, failure handling | `AgentGateway` | TBD |
+| **M1 - AI Agent Core** | LLM API, tool selection, multi-step tool-calling loop, failure handling | `AgentGateway` | **Rosalind Zhou (`@RosalindZhou`)** |
 | **M2 - MCP & Canvas Integration** | Java MCP adapter, Python server connection, read-only Canvas tool contracts and resource discovery | `McpToolGateway` / resource gateway | **Chris Li (`@chrislxn`)** |
 | **M3 - Document Handling** | File retrieval, optional on-demand PDF cache, model-compatible PDF input | `DocumentGateway` | TBD |
 | **M4 - Local Storage & To-Do** | Task Entity, local persistence, task operations | `TaskRepository` | TBD |
@@ -167,7 +167,7 @@ Java Swing Views: Chat / Resources / To-Do / Briefing
 
 **Canvas:** Official developer documentation: <https://developerdocs.instructure.com/services/canvas>. The Python MCP server should expose a minimal, read-only subset; Java talks to it via an agreed MCP transport (stdio or Streamable HTTP, TBD).
 
-**LLM provider:** TBD. It must support tool calling for the core Agent. PDF Use Case additionally requires a supported PDF/file-input mechanism; file transport via MCP and upload/input to the LLM are separate integration steps.
+**LLM provider:** Gemini; model selection and live API verification are pending. It must support tool calling for the core Agent. PDF Use Case additionally requires a supported PDF/file-input mechanism; file transport via MCP and upload/input to the LLM are separate integration steps.
 
 **Local persistence:** Personal To-Do data can be stored in JSON or another simple local format behind a DAO. A Canvas cache is optional and should be on demand, associated with source and fetch timestamps; stale content must be distinguishable from freshly retrieved information.
 
