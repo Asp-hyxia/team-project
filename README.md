@@ -25,10 +25,10 @@ All use cases have a student as the actor and begin with an action in the applic
 | UC2 - Find Canvas Resources | Select a course and enter a search | Retrieve and filter metadata; display matching resources and source links | No matches or access/service failure | MVP | Chris Li (`@chrislxn`) |
 | UC3 - Ask About Canvas Pages | Ask a question about a Page | Retrieve Page content; generate an answer and display its source | Inaccessible Page, insufficient information or model failure | MVP | Rosalind Zhou (`@RosalindZhou`) |
 | UC4 - Ask About Canvas PDFs | Ask a question about a course PDF | Retrieve an accessible PDF; generate an answer and display its source | Unsupported/inaccessible file or model failure | MVP | TBD |
-| UC5 - Summarize Announcements | Select courses and a time window | Retrieve announcements; display a dated summary with source links | No announcements or access/service failure | Extension; team decision pending | TBD |
-| UC6 - Generate Deadline Briefing | Select a date range | Retrieve assignments; display deadlines in date order with sources | No deadlines or access/service failure | Extension; team decision pending | TBD |
+| UC5 - Summarize Announcements | Select courses and a time window | Retrieve announcements; display a dated summary with source links | No announcements or access/service failure | MVP | TBD |
+| UC6 - Generate Deadline Briefing | Select a date range | Retrieve assignments; display deadlines in date order with sources | No deadlines or access/service failure | MVP | TBD |
 
-Each of the six members must lead at least one MVP use case. Final scope and remaining leads need team confirmation, including whether UC5 and UC6 enter the MVP. See [team work split](TEAM_WORK_SPLIT.md).
+Each of the six members must lead at least one MVP use case. UC1–UC6 are in scope. Remaining leads need team confirmation. See [team work split](TEAM_WORK_SPLIT.md).
 
 ## Domain Entities
 

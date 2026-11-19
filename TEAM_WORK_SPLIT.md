@@ -17,7 +17,7 @@
 
 A **module owner** is responsible for its shared contracts, integration readiness and helping other members use it. The owner does not necessarily write every file in the module. All significant changes should pass through PR review.
 
-## 2. Use Case Leadership
+## 2. MVP Use Case Leadership
 
 | Use Case | Lead | Acceptance Evidence |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ A **module owner** is responsible for its shared contracts, integration readines
 | UC5 - Summarize Announcements | **TBD** | Dated summary with Canvas source links |
 | UC6 - Generate Deadline Briefing | **TBD** | Ordered upcoming deadlines and an informative briefing |
 
-**Course expectation:** Each member must take the lead on at least one Use Case. The lead should implement most of its relevant Interactor, boundaries, Controller, Presenter, and UI integration, and coordinate any shared dependencies. Module-only contributions do **not** replace this requirement. Confirm the final Use Case count against actual team size before approval.
+**Course expectation:** Each member must take the lead on at least one Use Case. The lead should implement most of its relevant Interactor, boundaries, Controller, Presenter, and UI integration, and coordinate any shared dependencies. Module-only contributions do **not** replace this requirement. Assign the remaining leads across the six MVP use cases.
 
 ## 3. Shared Interface Decisions
 

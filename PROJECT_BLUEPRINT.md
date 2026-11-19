@@ -29,13 +29,13 @@ The AI agent decides which approved read-only tool to call in response to a user
 | P0 | Resource discovery and Canvas Page question answering | First end-to-end demo target |
 | P0 | Local To-Do with persistence | Owned by one member as a complete feature |
 | P0 | Canvas PDF question answering | Start with one permitted PDF; model/file-input integration |
-| P1 | Announcement summaries | Add once core tool calls are stable |
-| P1 | Upcoming-deadline briefings | Canvas assignments; optional inclusion of local tasks |
+| P0 | Announcement summaries | Dated summaries with Canvas source links |
+| P0 | Upcoming-deadline briefings | Canvas assignments; optional inclusion of local tasks |
 | Out | Outlook / Microsoft To Do synchronization | Local To-Do only |
 | Out | Canvas write operations, autonomous submissions, or message posting | Read-only MCP tool allowlist |
 | Out | Background system notifications, full LMS mirroring, OCR and vector database | Not required for MVP |
 
-**Scope rule:** P1 features may move into or out of the final MVP after a team decision. The number of final Use Cases must be consistent with the actual team size, and every team member must lead at least one substantial Use Case.
+**Scope rule:** UC1–UC6 form the MVP. Each of the six members leads at least one use case.
 
 ## 3. Proposed User Stories and Use Cases
 
@@ -47,8 +47,8 @@ These are **proposed refinements** of the User Stories in the current `test` bra
 | UC2 | As a student, I want to find relevant course Pages and files through the assistant, so I can locate resources without browsing every course. | **Find Canvas Resources** | P0 | **Chris Li (`@chrislxn`)** |
 | UC3 | As a student, I want to ask questions about a Canvas Page, so I can understand course instructions quickly. | **Ask About Canvas Pages** | P0 | **Rosalind Zhou (`@RosalindZhou`)** |
 | UC4 | As a student, I want to ask questions about PDFs on Canvas, so I can work with course materials without manually downloading and uploading them. | **Ask About Canvas PDFs** | P0 | TBD |
-| UC5 | As a student, I want a summary of recent course announcements, so I can identify important updates. | **Summarize Announcements** | P1 | TBD |
-| UC6 | As a student, I want a briefing of approaching deadlines, so I can prioritize my academic work. | **Generate Deadline Briefing** | P1 | TBD |
+| UC5 | As a student, I want a summary of recent course announcements, so I can identify important updates. | **Summarize Announcements** | P0 | TBD |
+| UC6 | As a student, I want a briefing of approaching deadlines, so I can prioritize my academic work. | **Generate Deadline Briefing** | P0 | TBD |
 
 ### UC1 - Manage Local To-Do
 
@@ -201,7 +201,7 @@ Course sources: [Project Timeline](https://q.utoronto.ca/courses/444184/pages/pr
 ## 9. Decisions Needed from the Team
 
 - [ ] Confirm the actual team size and the final number of MVP Use Cases.
-- [ ] Approve the P0/P1 feature scope.
+- [ ] Review the acceptance criteria for the six MVP use cases.
 - [ ] Assign every remaining Module Owner and Use Case Lead (`TBD` entries).
 - [ ] Confirm the existing Python MCP server's supported tool names, transport and setup instructions.
 - [ ] Choose a compatible Java runtime/MCP library and an LLM provider.
