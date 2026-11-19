@@ -1,41 +1,46 @@
+# Canvas Academic Assistant
 
-# Team Project
+## Project Domain
 
-Please keep this up-to-date with information about your project throughout the term.
+Education / Productivity. A Java Swing application that helps students find Canvas resources, ask questions about course materials with source links, and manage a persistent local To-Do list.
 
-The readme should include information such as:
-- a summary of what your application is all about
+## User Stories
 
-An information/notification gatherer integrated with AI Agent indented for university students (in particular 
-institutions use Canvas LMS as their primary platform for teaching and communicating) to keep track of daily events 
-such as Assignments, Due Dates, Exams, Events, tests/quizzes, Notifications from their university / affiliations.
+| ID | As a student, I want to... | So that I can... |
+| --- | --- | --- |
+| US1 | Manage personal study tasks | Keep track of my work |
+| US2 | Find Canvas Pages and files | Locate course resources quickly |
+| US3 | Ask questions about a Canvas Page | Understand course instructions |
+| US4 | Ask questions about a Canvas PDF | Understand course materials without manually uploading them |
+| US5 | Get summaries of recent announcements | Identify important course updates |
+| US6 | View upcoming deadlines in date order | Prioritize my work |
 
+## Use Cases and MVP
 
-- a list of the user stories, along with who is responsible for each one
+All use cases have a student as the actor and begin with an action in the application. Canvas features require authorized course access; AI features also require a configured model service. On failure, the application displays an error and allows the student to retry.
 
-As a student who want to have a straight forward visualization of my tasks and upcoming due dates,
-So I can prioritize some over others.
+| Use case | Trigger / input | Main flow and successful outcome | Alternative / failure | Scope | Lead |
+| --- | --- | --- | --- | --- | --- |
+| UC1 - Manage To-Do | Choose a task action | Create, list, complete, reopen or delete tasks; save changes locally | Invalid task input or storage failure | MVP | TBD |
+| UC2 - Find Canvas Resources | Select a course and enter a search | Retrieve and filter metadata; display matching resources and source links | No matches or access/service failure | MVP | Chris Li (`@chrislxn`) |
+| UC3 - Ask About Canvas Pages | Ask a question about a Page | Retrieve Page content; generate an answer and display its source | Inaccessible Page, insufficient information or model failure | MVP | Rosalind Zhou (`@RosalindZhou`) |
+| UC4 - Ask About Canvas PDFs | Ask a question about a course PDF | Retrieve an accessible PDF; generate an answer and display its source | Unsupported/inaccessible file or model failure | MVP | TBD |
+| UC5 - Summarize Announcements | Select courses and a time window | Retrieve announcements; display a dated summary with source links | No announcements or access/service failure | Extension; team decision pending | TBD |
+| UC6 - Generate Deadline Briefing | Select a date range | Retrieve assignments; display deadlines in date order with sources | No deadlines or access/service failure | Extension; team decision pending | TBD |
 
-As a student, I want to manage my todo list at a unified platform.
-So that I don't need to switch between office365, canvas and other todo list apps on my devices.
+Each of the six members must lead at least one MVP use case. Final scope and remaining leads need team confirmation, including whether UC5 and UC6 enter the MVP. See [team work split](TEAM_WORK_SPLIT.md).
 
-As a student using Canvas everyday, I want to integrate AI into my LMS 
-So that I don't need to read through every email and navigating between different course pages gathering information.
+## Domain Entities
 
-As a student, I want to get notification before every important deadline
-So that I don't accidentally miss an important due or event.
+| Entity | Instance variables | Relevant methods |
+| --- | --- | --- |
+| `Course` | `id`, `name`, `code` | `getId()`, `getName()`, `getCode()` |
+| `CourseResource` | `id`, `courseId`, `title`, `type` (Page/File), `sourceUrl` | `getId()`, `getCourseId()`, `getTitle()`, `getType()`, `getSourceUrl()` |
 
-As a student who use ai for suggestions on my daily studies, I want my agent to browse and get all the files posted
-on LMS itself
-So that I don't need to manually download them to my local device and send them to my agent.
+## API Usage
 
-As a student who use AI and allow agent to use my personal LMS, I want them to operate my LMS safely and never do
-unauthorized operations without my consent.
-
-- information about the API(s) that your project uses
-  Canvas api documents: https://developerdocs.instructure.com/services/canvas
-  Outlook Graph API documents: https://learn.microsoft.com/en-us/graph/use-the-api
-
-- screenshots or animations demonstrating current functionality
-
+| API | Purpose | Successful live call? |
+| --- | --- | --- |
+| [Canvas REST API](https://developerdocs.instructure.com/services/canvas) | Read authorized course resources through MCP | Team confirmation pending; local fixture tests pass |
+| [Gemini API](https://ai.google.dev/api/generate-content) | Answer questions using retrieved course content | Pending; local fixture tests pass |
 

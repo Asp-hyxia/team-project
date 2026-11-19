@@ -1,14 +1,14 @@
 # CSC207 Team Project - Team Work Split
 
 > **Status:** Draft for team approval.  
-> **Last revised:** November 17, 2026.  
-> **Rule:** Only Module 2 and UC2 have a confirmed owner. All other assignments remain **TBD** until accepted by the team.
+> **Last revised:** November 18, 2026.  
+> **Rule:** M1 / UC3 are claimed by Rosalind Zhou; M2 / UC2 are owned by Chris Li. All other assignments remain **TBD** until accepted by the team.
 
 ## 1. Module Ownership
 
 | Module | Owner | Responsibilities | First Deliverable |
 | --- | --- | --- | --- |
-| M1 - AI Agent Core | **TBD** | LLM API adapter, prompt/tool loop, approved tool selection, provider errors | Fake-tool call works from Java, then connect to MCP |
+| M1 - AI Agent Core | **Rosalind Zhou (`@RosalindZhou`)** | LLM API adapter, prompt/tool loop, approved tool selection, provider errors | Fake-tool call works from Java, then connect to MCP |
 | M2 - MCP & Canvas Integration | **Chris Li (`@chrislxn`)** | Java MCP Client, integration with existing Python Canvas MCP Server, Canvas read-only tools and typed resource discovery | Java calls a live Canvas tool via MCP and returns a resource result |
 | M3 - Document Handling | **TBD** | Canvas file retrieval, optional on-demand cache, PDF input to selected model | One accessible PDF can be passed to the model |
 | M4 - Local Storage & To-Do | **TBD** | Task Entity, task operations, file-based DAO, task tests | Tasks can be created/completed and survive restart |
@@ -23,7 +23,7 @@ A **module owner** is responsible for its shared contracts, integration readines
 | --- | --- | --- |
 | UC1 - Manage Local To-Do | **TBD** | Create/list/complete/delete and persisted state |
 | UC2 - Find Canvas Resources | **Chris Li (`@chrislxn`)** | Resource discovery through MCP; display titles/types/source links |
-| UC3 - Ask About Canvas Pages | **TBD** | Agent reads a Page and answers with a source link |
+| UC3 - Ask About Canvas Pages | **Rosalind Zhou (`@RosalindZhou`)** | Agent reads a Page and answers with a source link |
 | UC4 - Ask About Canvas PDFs | **TBD** | Agent obtains a permitted PDF and answers with its source |
 | UC5 - Summarize Announcements | **TBD** | Dated summary with Canvas source links |
 | UC6 - Generate Deadline Briefing | **TBD** | Ordered upcoming deadlines and an informative briefing |
@@ -34,7 +34,7 @@ A **module owner** is responsible for its shared contracts, integration readines
 
 | Interface / contract | Responsible module | Consumers | Decision status |
 | --- | --- | --- | --- |
-| `AgentGateway` | M1 | UC2-UC6 where AI is needed | Signature TBD |
+| `AgentGateway` | **M1 (Rosalind Zhou)** | UC2-UC6 where AI is needed | Signature TBD |
 | `McpToolGateway` | **M2 (Chris Li)** | M1, M3, academic features | Actual Python server tools/transport to be audited |
 | `DocumentGateway` | M3 | UC4, M1 | Signature TBD |
 | `TaskRepository` | M4 | UC1, optionally UC6 | Signature TBD |
