@@ -41,6 +41,21 @@ Each of the six members must lead at least one MVP use case. UC1–UC6 are in sc
 
 | API | Purpose | Successful live call? |
 | --- | --- | --- |
-| [Canvas REST API](https://developerdocs.instructure.com/services/canvas) | Read authorized course resources through MCP | Team confirmation pending; local fixture tests pass |
-| [Gemini API](https://ai.google.dev/api/generate-content) | Answer questions using retrieved course content | Pending; local fixture tests pass |
+| [Canvas REST API](https://developerdocs.instructure.com/services/canvas) | Read authorized course resources through MCP | Yes - course listing and Page reading verified |
+| [Gemini API](https://ai.google.dev/api/generate-content) | Answer questions using retrieved course content | Yes - verified with `gemini-3.1-flash-lite` |
 
+
+## Run and Test
+
+Requires JDK 11+ and Maven. Run `mvn test` for offline tests; API keys are unnecessary for these tests.
+
+For a live demo, import `pom.xml` in IntelliJ and run `app.Main`. Add these environment variables to its run configuration.
+
+| Variable | Value |
+| --- | --- |
+| `CANVAS_ORIGIN` | Your Canvas origin, e.g. `https://q.utoronto.ca` |
+| `CANVAS_TOKEN` | Your local Canvas access token |
+| `GEMINI_API_KEY` | Your local Gemini API key |
+| `GEMINI_MODEL` | Optional; defaults to `gemini-3.1-flash-lite` |
+
+Select a course, search resources, select a Page, then choose **Ask about selected page**. If the directory is unavailable, enter a known Page slug (e.g. `project-timeline-2`) and choose **Use page slug**. Ask a question and check the answer and Canvas source link. Credentials belong in local configuration.

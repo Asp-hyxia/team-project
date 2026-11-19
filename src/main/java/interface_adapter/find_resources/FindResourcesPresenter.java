@@ -11,7 +11,7 @@ public final class FindResourcesPresenter implements FindResourcesOutputBoundary
         List<ResourcesViewModel.CourseOption> courses = output.courses.stream()
                 .map(c -> new ResourcesViewModel.CourseOption(c.id, c.name)).collect(Collectors.toList());
         List<ResourcesViewModel.Row> rows = output.resources.stream()
-                .map(r -> new ResourcesViewModel.Row(r.title, r.type, r.course, r.sourceUrl)).collect(Collectors.toList());
+                .map(r -> new ResourcesViewModel.Row(r.courseId, r.resourceId, r.title, r.type, r.course, r.sourceUrl)).collect(Collectors.toList());
         String message;
         if (output.courseSelectionOnly) {
             message = courses.isEmpty() ? "No active favorite/default courses are available." : "Select a course, then search or browse with a blank query.";

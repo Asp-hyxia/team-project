@@ -16,6 +16,8 @@ class CanvasResourceGatewayTest {
     private String files = "[{\"id\":2,\"display_name\":\"Notes.pdf\",\"url\":\"https://signed.invalid/?secret=never-return\"}]";
     private int pagesStatus = 200;
     private int filesStatus = 200;
+    private String singlePage = "{\"url\":\"timeline\",\"title\":\"Timeline\",\"body\":\"<p>Due Friday.</p>\",\"published\":true}";
+    private int singleStatus = 200;
     private String next;
     private final AtomicInteger calls = new AtomicInteger();
     @BeforeEach void start() throws Exception {
@@ -37,6 +39,7 @@ class CanvasResourceGatewayTest {
                     exchange.getResponseHeaders().add("Link", "<" + next + ">; rel=\"next\"");
                 }
             }
+            else if (path.endsWith("/pages/timeline")) { body = singlePage; status = singleStatus; }
             else { body = files; status = filesStatus; }
             byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
@@ -95,4 +98,34 @@ class CanvasResourceGatewayTest {
             assertThrows(IllegalArgumentException.class, () -> new CanvasResourceGateway(URI.create(origin), "test"));
         }
     }
+    @Test void readsAuthorizedPageBodyAndBuildsCanonicalSource() throws Exception {
+        use_case.ask_page.PageContent page = gateway.readPage(1, "timeline");
+        assertEquals("<p>Due Friday.</p>", page.text);
+        assertEquals("https://127.0.0.1/courses/1/pages/timeline", page.source.toString());
+    }
+
+    @Test void rejectsUnauthorizedLockedAndMismatchedPages() {
+        assertEquals(use_case.ask_page.AskPageException.Code.PERMISSION_DENIED,
+                assertThrows(use_case.ask_page.AskPageException.class, () -> gateway.readPage(2, "timeline")).getCode());
+        singlePage = "{\"url\":\"timeline\",\"locked_for_user\":true}";
+        assertEquals(use_case.ask_page.AskPageException.Code.PERMISSION_DENIED,
+                assertThrows(use_case.ask_page.AskPageException.class, () -> gateway.readPage(1, "timeline")).getCode());
+        singlePage = "{\"url\":\"other\",\"body\":\"Wrong page\"}";
+        assertEquals(use_case.ask_page.AskPageException.Code.INVALID_RESPONSE,
+                assertThrows(use_case.ask_page.AskPageException.class, () -> gateway.readPage(1, "timeline")).getCode());
+    }
+
+    @Test void classifiesPageHttpFailuresAndRejectsPathTraversal() {
+        singleStatus = 403;
+        assertEquals(use_case.ask_page.AskPageException.Code.PERMISSION_DENIED,
+                assertThrows(use_case.ask_page.AskPageException.class, () -> gateway.readPage(1, "timeline")).getCode());
+        singleStatus = 404;
+        assertEquals(use_case.ask_page.AskPageException.Code.PAGE_UNAVAILABLE,
+                assertThrows(use_case.ask_page.AskPageException.class, () -> gateway.readPage(1, "timeline")).getCode());
+        int before = calls.get();
+        assertEquals(use_case.ask_page.AskPageException.Code.INVALID_INPUT,
+                assertThrows(use_case.ask_page.AskPageException.class, () -> gateway.readPage(1, "../private")).getCode());
+        assertEquals(before, calls.get());
+    }
+
 }

@@ -13,11 +13,17 @@ public final class ResourcesViewModel {
         @Override public String toString() { return name; }
     }
     public static final class Row {
+        public final long courseId;
+        public final String resourceId;
         public final String title;
         public final String type;
         public final String course;
         public final String url;
         public Row(String title, String type, String course, String url) {
+            this(0, "", title, type, course, url);
+        }
+        public Row(long courseId, String resourceId, String title, String type, String course, String url) {
+            this.courseId = courseId; this.resourceId = resourceId;
             this.title = title; this.type = type; this.course = course; this.url = url;
         }
     }
