@@ -10,7 +10,6 @@ public final class Announcement {
     private final long courseId;
     private final String courseName;
     private final Instant time;
-    private final String type;
     private final String title;
     private final String content;
     private final URI sourceUrl;
@@ -20,16 +19,14 @@ public final class Announcement {
             long courseId,
             String courseName,
             Instant time,
-            String type,
             String title,
             String content,
             URI sourceUrl) {
         if (Objects.requireNonNull(id).isBlank() || courseId <= 0
                 || Objects.requireNonNull(courseName).isBlank()
-                || Objects.requireNonNull(type).isBlank()
                 || Objects.requireNonNull(title).isBlank()
                 || Objects.requireNonNull(content).isBlank()) {
-            throw new IllegalArgumentException("Announcement needs an ID, course, type, title and content.");
+            throw new IllegalArgumentException("Announcement needs an ID, course, title and content.");
         }
         this.time = Objects.requireNonNull(time);
         this.sourceUrl = Objects.requireNonNull(sourceUrl);
@@ -41,7 +38,6 @@ public final class Announcement {
         this.id = id;
         this.courseId = courseId;
         this.courseName = courseName;
-        this.type = type;
         this.title = title;
         this.content = content;
     }
@@ -50,7 +46,6 @@ public final class Announcement {
     public long getCourseId() { return courseId; }
     public String getCourseName() { return courseName; }
     public Instant getTime() { return time; }
-    public String getType() { return type; }
     public String getTitle() { return title; }
     public String getContent() { return content; }
     public URI getSourceUrl() { return sourceUrl; }
