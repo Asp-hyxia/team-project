@@ -2,6 +2,7 @@ package entity;
 
 import org.junit.jupiter.api.Test;
 import java.net.URI;
+import java.time.Instant;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EntitiesTest {
@@ -28,5 +29,20 @@ class EntitiesTest {
         assertThrows(NullPointerException.class, () -> new CourseResource("2", 1, null, CourseResource.Type.FILE, url));
         assertThrows(NullPointerException.class, () -> new CourseResource("2", 1, "Notes", null, url));
         assertThrows(NullPointerException.class, () -> new CourseResource("2", 1, "Notes", CourseResource.Type.FILE, null));
+    }
+    @Test void announcementAccessors() {
+        Instant time = Instant.parse("2026-11-21T15:00:00Z");
+        URI url = URI.create("https://canvas.example.edu/courses/1/announcements/announcement-1");
+        Announcement announcement = new Announcement("announcement-1", 1, "Software Design", time,
+                "Assignment update", "Project due date changed", "The project is now due Friday.", url);
+
+        assertEquals("announcement-1", announcement.getId());
+        assertEquals(1, announcement.getCourseId());
+        assertEquals("Software Design", announcement.getCourseName());
+        assertEquals(time, announcement.getTime());
+        assertEquals("Assignment update", announcement.getType());
+        assertEquals("Project due date changed", announcement.getTitle());
+        assertEquals("The project is now due Friday.", announcement.getContent());
+        assertEquals(url, announcement.getSourceUrl());
     }
 }
