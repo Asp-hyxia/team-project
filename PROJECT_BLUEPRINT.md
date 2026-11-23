@@ -3,7 +3,7 @@
 > **Status:** Draft for team review  
 > **Last revised:** November 18, 2026  
 > **Branch for proposed changes:** `test`  
-> **Ownership:** See [Team Work Split](TEAM_WORK_SPLIT.md). M1 / UC3 are claimed by Rosalind Zhou (`@RosalindZhou`); M2 / UC2 are owned by Chris Li (`@chrislxn`). Remaining owners are `TBD`.
+> **Ownership:** See [Team Work Split](TEAM_WORK_SPLIT.md). M1 / UC3 are claimed by Rosalind Zhou (`@RosalindZhou`); M2 / UC2 are owned by Chris Li (`@chrislxn`); M4 / UC1 are claimed by Yue Tang. Remaining owners are `TBD`.
 
 ## 1. Project Overview
 
@@ -93,13 +93,13 @@ These are **proposed refinements** of the User Stories in the current `test` bra
 
 ## 4. Domain Model (Initial)
 
-| Entity / value object | Suggested fields | Purpose |
-| --- | --- | --- |
-| `Task` | `id`, `title`, `dueAt`, `completed` | Locally persisted personal task and its completion behavior |
-| `Course` | `id`, `name`, `courseCode` | A course returned by Canvas |
-| `CourseResource` | `id`, `courseId`, `title`, `type`, `sourceUrl` | Metadata for Canvas Pages and files |
-| `AcademicDeadline` | `id`, `courseId`, `title`, `dueAt`, `sourceUrl` | Due dates for briefing and presentation |
-| `SourceReference` | `title`, `url` | Value object attached to AI answers |
+| Entity / value object | Suggested fields                                | Purpose                                                     |
+|-----------------------|-------------------------------------------------|-------------------------------------------------------------|
+| `Task`                | `id`, `title`, `dueAt`, `completed`             | Locally persisted personal task and its completion behavior |
+| `Course`              | `id`, `name`, `courseCode`                      | A course returned by Canvas                                 |
+| `CourseResource`      | `id`, `courseId`, `title`, `type`, `sourceUrl`  | Metadata for Canvas Pages and files                         |
+| `AcademicDeadline`    | `id`, `courseId`, `title`, `dueAt`, `sourceUrl` | Due dates for briefing and presentation                     |
+| `SourceReference`     | `title`, `url`                                  | Value object attached to AI answers                         |
 
 These are application models, **not** the raw JSON structures returned by Canvas or MCP. Do not add fields and classes until a Use Case requires them. We should document class attributes and relevant methods in the README or an accompanying UML class diagram before the final presentation.
 
@@ -133,14 +133,14 @@ Java Swing Views: Chat / Resources / To-Do / Briefing
 
 ### Modules and interfaces
 
-| Module | Description | Main interface / integration point | Owner |
-| --- | --- | --- | --- |
-| **M1 - AI Agent Core** | LLM API, tool selection, multi-step tool-calling loop, failure handling | `AgentGateway` | **Rosalind Zhou (`@RosalindZhou`)** |
-| **M2 - MCP & Canvas Integration** | Java MCP adapter, Python server connection, read-only Canvas tool contracts and resource discovery | `McpToolGateway` / resource gateway | **Chris Li (`@chrislxn`)** |
-| **M3 - Document Handling** | File retrieval, optional on-demand PDF cache, model-compatible PDF input | `DocumentGateway` | TBD |
-| **M4 - Local Storage & To-Do** | Task Entity, local persistence, task operations | `TaskRepository` | TBD |
-| **M5 - Swing Frontend** | Chat, resource, task and results views; ViewModels and application UI conventions | Controllers / Presenters / Views | TBD |
-| **M6 - Academic Features & Integration** | Announcement/deadline workflows, shared composition / AppBuilder, demo integration | Use Case boundaries and AppBuilder | TBD |
+| Module                                   | Description                                                                                        | Main interface / integration point  | Owner                               |
+|------------------------------------------|----------------------------------------------------------------------------------------------------|-------------------------------------|-------------------------------------|
+| **M1 - AI Agent Core**                   | LLM API, tool selection, multi-step tool-calling loop, failure handling                            | `AgentGateway`                      | **Rosalind Zhou (`@RosalindZhou`)** |
+| **M2 - MCP & Canvas Integration**        | Java MCP adapter, Python server connection, read-only Canvas tool contracts and resource discovery | `McpToolGateway` / resource gateway | **Chris Li (`@chrislxn`)**          |
+| **M3 - Document Handling**               | File retrieval, optional on-demand PDF cache, model-compatible PDF input                           | `DocumentGateway`                   | TBD                                 |
+| **M4 - Local Storage & To-Do**           | Task Entity, local persistence, task operations                                                    | `TaskRepository`                    | **Yue Tang (`@happy-soup`)**        |
+| **M5 - Swing Frontend**                  | Chat, resource, task and results views; ViewModels and application UI conventions                  | Controllers / Presenters / Views    | TBD                                 |
+| **M6 - Academic Features & Integration** | Announcement/deadline workflows, shared composition / AppBuilder, demo integration                 | Use Case boundaries and AppBuilder  | TBD                                 |
 
 **Ownership model:** Every person should have a primary shared module responsibility **and** lead a complete user-facing Use Case. Technical module ownership is not a substitute for CSC207's individual Use Case leadership requirement. Feature teams may contribute changes across modules, subject to review.
 
@@ -189,12 +189,12 @@ Java Swing Views: Chat / Resources / To-Do / Briefing
 
 ## 8. Testing and Course Timeline
 
-| Date | Milestone | Evidence |
-| --- | --- | --- |
-| **Nov 20, 2026** | Individual progress and working prototype | Each member: substantial PR, review of at least one teammate PR, runnable assigned work; team: a working external API call and at least one complete Use Case |
-| **Nov 27, 2026** | Near-complete MVP | MVP integrated, at least one unit test per Interactor |
-| **Dec 4, 2026** | Final polish | 100% line coverage for Entity and Use Case layers; resolved bugs; presentation practice |
-| **Dec 7-8, 2026** | Final presentations | Demonstrate MVP; all members explain their own work and design decisions |
+| Date              | Milestone                                 | Evidence                                                                                                                                                      |
+|-------------------|-------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Nov 20, 2026**  | Individual progress and working prototype | Each member: substantial PR, review of at least one teammate PR, runnable assigned work; team: a working external API call and at least one complete Use Case |
+| **Nov 27, 2026**  | Near-complete MVP                         | MVP integrated, at least one unit test per Interactor                                                                                                         |
+| **Dec 4, 2026**   | Final polish                              | 100% line coverage for Entity and Use Case layers; resolved bugs; presentation practice                                                                       |
+| **Dec 7-8, 2026** | Final presentations                       | Demonstrate MVP; all members explain their own work and design decisions                                                                                      |
 
 Course sources: [Project Timeline](https://q.utoronto.ca/courses/444184/pages/project-timeline-2), [Project README and MVP guidance](https://q.utoronto.ca/courses/444184/pages/project-readme-and-minimum-viable-product-mvp), [Project Expectations](https://q.utoronto.ca/courses/444184/pages/project-expectations).
 
