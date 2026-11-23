@@ -4,7 +4,7 @@ package use_case.summarize_announcements;
 public final class SummarizeAnnouncementsException extends Exception {
     public enum Code {
         INVALID_INPUT, PERMISSION_DENIED, ANNOUNCEMENTS_UNAVAILABLE,
-        SUMMARIZER_UNAVAILABLE, INVALID_RESPONSE
+        SUMMARIZER_UNAVAILABLE, INVALID_RESPONSE, SERVICE_BUSY, UNEXPECTED_FAILURE
     }
 
     private final Code code;
