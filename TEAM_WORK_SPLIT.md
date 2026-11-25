@@ -1,8 +1,9 @@
 # CSC207 Team Project - Team Work Split
 
 > **Status:** Draft for team approval.  
-> **Last revised:** November 18, 2026.  
-> **Rule:** M1 / UC3 are claimed by Rosalind Zhou; M2 / UC2 are owned by Chris Li; M4 / UC1 are claimed by Yue Tang. All remaining assignments are TBD until accepted by the team.
+> **Last revised:** November 25, 2026.
+>
+> **Rule:** M1 / UC3 are claimed by Rosalind Zhou; M2 and the merged UC2 (formerly UC2 and UC4) are owned by Chris Li; M4 / UC1 are claimed by Yue Tang; UC5 is led by Ran Yan. All remaining assignments are TBD until accepted by the team.
 ## 1. Module Ownership
 
 | Module                               | Owner                               | Responsibilities                                                                                                         | First Deliverable                                                   |
@@ -21,10 +22,10 @@ A **module owner** is responsible for its shared contracts, integration readines
 | Use Case                         | Lead                                | Acceptance Evidence                                               |
 |----------------------------------|-------------------------------------|-------------------------------------------------------------------|
 | UC1 - Manage Local To-Do         | **Yue Tang (`@happy-soup`)**        | Create/list/complete/delete and persisted state                   |
-| UC2 - Find Canvas Resources      | **Chris Li (`@chrislxn`)**          | Resource discovery through MCP; display titles/types/source links |
+| UC2 - Find and Ask About Canvas Resources | **Chris Li (`@chrislxn`)** | Find Pages and files through MCP, ask about an accessible PDF, and receive an answer citing the Canvas file |
 | UC3 - Ask About Canvas Pages     | **Rosalind Zhou (`@RosalindZhou`)** | Agent reads a Page and answers with a source link                 |
-| UC4 - Ask About Canvas PDFs      | **TBD**                             | Agent obtains a permitted PDF and answers with its source         |
-| UC5 - Summarize Announcements    | **TBD**                             | Dated summary with Canvas source links                            |
+| UC4 - Save and Reopen Course Resources | **TBD** | Save a source from search results or an answer citation, then reopen or remove it after a restart |
+| UC5 - Summarize Announcements    | **Ran Yan (`@Asp-hyxia`)**          | Dated summary with Canvas source links                            |
 | UC6 - Generate Deadline Briefing | **TBD**                             | Ordered upcoming deadlines and an informative briefing            |
 
 **Course expectation:** Each member must take the lead on at least one Use Case. The lead should implement most of its relevant Interactor, boundaries, Controller, Presenter, and UI integration, and coordinate any shared dependencies. Module-only contributions do **not** replace this requirement. Assign the remaining leads across the six MVP use cases.
@@ -33,11 +34,11 @@ A **module owner** is responsible for its shared contracts, integration readines
 
 | Interface / contract                | Responsible module     | Consumers                  | Decision status                                    |
 |-------------------------------------|------------------------|----------------------------|----------------------------------------------------|
-| `AgentGateway`                      | **M1 (Rosalind Zhou)** | UC2-UC6 where AI is needed | Signature TBD                                      |
+| `AgentGateway`                      | **M1 (Rosalind Zhou)** | UC2, UC3, UC5 and UC6 where AI is needed | Signature TBD |
 | `McpToolGateway`                    | **M2 (Chris Li)**      | M1, M3, academic features  | Actual Python server tools/transport to be audited |
-| `DocumentGateway`                   | M3                     | UC4, M1                    | Signature TBD                                      |
+| `DocumentGateway`                   | M3                     | UC2, M1                    | Signature TBD                                      |
 | `TaskRepository`                    | **M4 (Yue Tang)**      | UC1, optionally UC6        | Signature TBD                                      |
-| Shared Chat UI / ViewModel contract | M5                     | UC2-UC6                    | Signature TBD                                      |
+| Shared Chat UI / ViewModel contract | M5                     | UC2, UC3, UC5 and UC6      | Signature TBD                                      |
 | AppBuilder composition              | M6                     | All modules                | Wiring plan TBD                                    |
 
 **Integration contract:** Agree on DTOs, error types, and async execution boundaries before each person implements a concrete adapter. Use fake interfaces to avoid waiting for the real services.
@@ -46,7 +47,9 @@ A **module owner** is responsible for its shared contracts, integration readines
 
 **Owner:** Chris Li (`@chrislxn`)  
 **Module:** MCP & Canvas Integration  
-**Use Case Lead:** UC2 - Find Canvas Resources
+**Use Case Lead:** UC2 - Find and Ask About Canvas Resources
+
+For UC2, Chris owns the resource search and PDF question flow, including MCP client integration and prompt and tool behavior for PDF questions. UC2 uses the shared M1 agent and the authorized Canvas API retrieval supplied through UC3.
 
 ### Deliverables
 

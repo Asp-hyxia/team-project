@@ -1,9 +1,10 @@
 # CSC207 Team Project - Project Blueprint
 
 > **Status:** Draft for team review  
-> **Last revised:** November 18, 2026  
+> **Last revised:** November 25, 2026
+>
 > **Branch for proposed changes:** `test`  
-> **Ownership:** See [Team Work Split](TEAM_WORK_SPLIT.md). M1 / UC3 are claimed by Rosalind Zhou (`@RosalindZhou`); M2 / UC2 are owned by Chris Li (`@chrislxn`); M4 / UC1 are claimed by Yue Tang. Remaining owners are `TBD`.
+> **Ownership:** See [Team Work Split](TEAM_WORK_SPLIT.md). M1 / UC3 are claimed by Rosalind Zhou (`@RosalindZhou`); M2 and the merged UC2 (formerly UC2 and UC4) are owned by Chris Li (`@chrislxn`); M4 / UC1 are claimed by Yue Tang; UC5 is led by Ran Yan. Remaining owners are `TBD`.
 
 ## 1. Project Overview
 
@@ -28,7 +29,8 @@ The AI agent decides which approved read-only tool to call in response to a user
 | P0 | Canvas access through MCP | Reuse and integrate an existing Python Canvas MCP server where feasible |
 | P0 | Resource discovery and Canvas Page question answering | First end-to-end demo target |
 | P0 | Local To-Do with persistence | Owned by one member as a complete feature |
-| P0 | Canvas PDF question answering | Start with one permitted PDF; model/file-input integration |
+| P0 | Canvas PDF question answering in UC2 | Start with one permitted PDF and cite its Canvas source |
+| P0 | Saved course resources in UC4 | Save, reopen, and remove source links |
 | P0 | Announcement summaries | Dated summaries with Canvas source links |
 | P0 | Upcoming-deadline briefings | Canvas assignments; optional inclusion of local tasks |
 | Out | Outlook / Microsoft To Do synchronization | Local To-Do only |
@@ -39,15 +41,15 @@ The AI agent decides which approved read-only tool to call in response to a user
 
 ## 3. Proposed User Stories and Use Cases
 
-These are **proposed refinements** of the User Stories in the current `test` branch README, not already approved team assignments.
+UC2 combines the original Canvas resource search and PDF question use cases. The new UC4 lets students save and reopen course resources.
 
 | ID | User Story | Use Case | Priority | Lead |
 | --- | --- | --- | --- | --- |
-| UC1 | As a student, I want to manage my personal study tasks without switching between apps, so I can keep track of my work. | **Manage Local To-Do** | P0 | TBD |
-| UC2 | As a student, I want to find relevant course Pages and files through the assistant, so I can locate resources without browsing every course. | **Find Canvas Resources** | P0 | **Chris Li (`@chrislxn`)** |
+| UC1 | As a student, I want to manage my personal study tasks without switching between apps, so I can keep track of my work. | **Manage Local To-Do** | P0 | **Yue Tang (`@happy-soup`)** |
+| UC2 | As a student, I want to find Canvas resources and ask about a PDF I find, so I can use course materials without manually uploading them. | **Find and Ask About Canvas Resources** | P0 | **Chris Li (`@chrislxn`)** |
 | UC3 | As a student, I want to ask questions about a Canvas Page, so I can understand course instructions quickly. | **Ask About Canvas Pages** | P0 | **Rosalind Zhou (`@RosalindZhou`)** |
-| UC4 | As a student, I want to ask questions about PDFs on Canvas, so I can work with course materials without manually downloading and uploading them. | **Ask About Canvas PDFs** | P0 | TBD |
-| UC5 | As a student, I want a summary of recent course announcements, so I can identify important updates. | **Summarize Announcements** | P0 | TBD |
+| UC4 | As a student, I want to save useful course sources, so I can reopen them without repeating a search. | **Save and Reopen Course Resources** | P0 | TBD |
+| UC5 | As a student, I want a summary of recent course announcements, so I can identify important updates. | **Summarize Announcements** | P0 | **Ran Yan (`@Asp-hyxia`)** |
 | UC6 | As a student, I want a briefing of approaching deadlines, so I can prioritize my academic work. | **Generate Deadline Briefing** | P0 | TBD |
 
 ### UC1 - Manage Local To-Do
@@ -57,27 +59,27 @@ These are **proposed refinements** of the User Stories in the current `test` bra
 - **Failure:** blank/invalid title, invalid date, or missing task results in a clear error.
 - **Boundary:** no Microsoft Graph, Outlook, or third-party To-Do synchronization.
 
-### UC2 - Find Canvas Resources (Lead: Chris Li)
+### UC2 - Find and Ask About Canvas Resources (Lead: Chris Li)
 
-- **Input:** a query or course selection from the Swing interface.
-- **Success:** the application obtains relevant Canvas Page/file metadata using authorized MCP tools and displays resource titles, types, and source links.
-- **Failure:** no matches, permission denial, disconnected MCP server, or unavailable Canvas is explained to the user.
-- **Boundary:** discovery is read-only and does not require downloading all course resources.
-- **Independent acceptance:** with a real connected account, the user can search for a known course resource and open its Canvas source link. A fake MCP/agent adapter allows unit tests without network access.
+- **Input:** a course and a search query, optionally followed by a question about a selected PDF.
+- **Success:** the application shows matching Canvas Pages and files with titles, types, and source links. For a PDF question, the agent uses the authorized document and answers with a citation to the original Canvas file.
+- **Failure:** show a clear outcome for no matches, inaccessible or unsupported PDFs, size limits, service failures, and insufficient evidence.
+- **Integration:** Chris owns the MCP client integration, prompts and tool behavior for this workflow, plus the model-side handoff for PDFs. UC2 reuses the shared M1 agent and the authorized Canvas retrieval provided through UC3.
+- **Acceptance:** search for a known resource, select a PDF, and ask a question whose answer can be verified against the cited file.
 
 ### UC3 - Ask About Canvas Pages (Lead: Rosalind Zhou)
 
 - **Input:** a natural-language question about course information.
 - **Success:** the AI chooses approved MCP tools, retrieves relevant Page content, and answers with the Canvas source link(s).
 - **Failure:** inaccessible Page or unavailable provider is shown as a recoverable error.
-- **Boundary:** the model should not invent a source link or treat course text as instructions to execute unapproved tools.
+- **Boundary:** the model should not invent a source link or treat course text as instructions to execute unapproved tools. The Canvas API retrieval used by UC2 is provided through UC3.
 
-### UC4 - Ask About Canvas PDFs
+### UC4 - Save and Reopen Course Resources
 
-- **Input:** a question concerning a PDF available in a course.
-- **Success:** the agent discovers the file using MCP, the permitted PDF is downloaded or retrieved on demand, and the Java model adapter supplies it using the selected provider's file-input API. The response cites the original Canvas file.
-- **Failure:** unsupported type, size limit, inaccessible file, or model limitations are surfaced clearly.
-- **Boundary:** MVP targets accessible PDFs; OCR and full document search/indexing are excluded.
+- **Input:** save a source from search results or an answer citation, or select a saved source to open or remove.
+- **Success:** saved titles and links survive a restart. Opening a saved link takes the student to the original Canvas source.
+- **Failure:** report an invalid link or local persistence error.
+- **Boundary:** store source metadata locally. Canvas checks access when the link is opened.
 
 ### UC5 - Summarize Announcements
 
@@ -167,9 +169,9 @@ Java Swing Views: Chat / Resources / To-Do / Briefing
 
 **Canvas:** Official developer documentation: <https://developerdocs.instructure.com/services/canvas>. The Python MCP server should expose a minimal, read-only subset; Java talks to it via an agreed MCP transport (stdio or Streamable HTTP, TBD).
 
-**LLM provider:** Gemini; model selection and live API verification are pending. It must support tool calling for the core Agent. PDF Use Case additionally requires a supported PDF/file-input mechanism; file transport via MCP and upload/input to the LLM are separate integration steps.
+**LLM provider:** Gemini; model selection and live API verification are pending. It must support tool calling for the core Agent. PDF questions in UC2 require a supported model file-input mechanism. UC2 supplies the retrieved PDF to the model.
 
-**Local persistence:** Personal To-Do data can be stored in JSON or another simple local format behind a DAO. A Canvas cache is optional and should be on demand, associated with source and fetch timestamps; stale content must be distinguishable from freshly retrieved information.
+**Local persistence:** Personal To-Do data and saved resource metadata can use JSON or another simple local format behind DAOs. A Canvas cache is optional and should be on demand, associated with source and fetch timestamps; stale content must be distinguishable from freshly retrieved information.
 
 **Security constraints:** Never commit Canvas or LLM tokens, `.env` files containing secrets, downloaded private course material, or cached credentials. Keep Canvas tools read-only. Use an allowlist of permitted tool calls. Treat LMS text and PDF content as untrusted data; it must not override program safety rules or authorize extra operations.
 
