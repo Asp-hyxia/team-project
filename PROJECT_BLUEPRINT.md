@@ -27,7 +27,7 @@ The AI agent decides which approved read-only tool to call in response to a user
 | P0 | Java Swing application and Clean Architecture | Mandatory course design direction |
 | P0 | AI tool-calling loop | The model chooses relevant catalog items, and Java dispatches approved item reads |
 | P0 | Canvas access through MCP | UC3 provides a shared course catalog and on-demand reads through the Java Canvas MCP server |
-| P0 | Browse Canvas course content in UC3 | Show Page and PDF entries from the course home, directories, and Modules, then open a selected item |
+| P0 | Browse Canvas course content in UC3 | Preview custom HTML or show native Modules, and open sources through the appropriate view |
 | P0 | Local To-Do with persistence | Owned by one member as a complete feature |
 | P0 | Search and ask about Canvas resources in UC2 | Answer from Pages and PDFs and cite the sources actually read |
 | P0 | Saved course resources in UC4 | Save, reopen, and remove source links |
@@ -61,19 +61,21 @@ UC3 lets students browse and open Canvas content. UC2 searches the same catalog 
 
 ### UC2 - Find and Ask About Canvas Resources (Lead: Chris Li)
 
-- **Input:** a selected course and a search query or question, optionally with a selected Page or PDF.
-- **Success:** search returns matching catalog entries. For questions, the agent reads the selected entry when present, examines the shared catalog, and chooses additional relevant entries when needed. Swing displays the answer and original links for the sources used.
+- **Input:** a selected course and a search query or question, with optional configured defaults and selected Page or PDF IDs.
+- **Success:** search returns matching catalog entries. For questions, the agent uses configured and selected references, reads whole items by ID, and can choose relevant additional entries from the shared catalog. Swing displays the answer and original links for the sources used.
 - **Failure:** report empty search results, inaccessible sources, unsupported files or size limits, insufficient evidence, and model or service errors.
 - **Integration:** Chris owns UC2's UI, prompts, source selection, reading limits, and Page/PDF model input. UC2 uses Rosalind's shared M1 Gemini client and the UC3 content contract over MCP.
 - **Acceptance:** ask about a selected Page or PDF. With a fixture question that requires another item, verify the agent finds it in the catalog and cites both sources. A question answered by the initial item should finish with one read.
 
 ### UC3 - Browse and Read Canvas Course Content (Lead: Rosalind Zhou)
 
-- **Input:** select a course, then select a visible catalog entry.
-- **Success:** Swing displays the course catalog and opens the requested item on demand. The catalog combines Page and PDF entries from the course home, Pages and Files directories, and Modules. Module locations help students browse courses with different layouts.
+- **Input:** add a course by URL and Canvas connection, or open a configured course. Then follow a Page link, expand a module, or open a resource.
+- **Success:** Swing renders a custom home as HTML or shows Modules in a native list. Links to supported Pages from the HTML preview continue in that pane. Files and Page or file rows in Modules open in the browser. The catalog combines Page and PDF metadata from course discovery routes.
 - **Failure:** distinguish an empty catalog from a partial catalog or access failure. Report an inaccessible item when selected and keep the other available entries visible.
 - **Integration:** Rosalind owns UC3's browsing UI and the Canvas REST adapter and MCP tool handlers for the shared catalog and authorized item reads.
-- **Acceptance:** open a Page from a populated course home, then open a resource from Modules in a course with an empty home. Opening an item requests only that item's contents.
+- **Acceptance:** follow a Page link inside a custom HTML home, then expand Modules and open a module resource in the browser. Verify that a UC2 read of the same resource succeeds by catalog ID.
+
+See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md) for course setup, rendering, link routing, and detailed acceptance scenarios.
 
 ### UC4 - Save and Reopen Course Resources
 
@@ -148,12 +150,12 @@ The following operations describe the planned application interface. UC3 supplie
 
 | Operation | Input | Result |
 | --- | --- | --- |
-| `listContent` | `courseId` and optional pagination cursor | A list of visible entries with `contentId`, title, type, canonical source URL, and module locations when available. Include a next cursor or partial-result warnings when applicable. |
-| `readContent` | `courseId` and `contentId` | Authorized Page text or PDF content with its title and canonical source URL. Return a typed error for denied access, an unavailable item, unsupported content, or a service failure. |
+| `listContent` | `courseId`, optional `parentId`, and optional pagination cursor | The shared catalog or the requested branch. Include `contentId`, title, type, canonical source URL, locations, and any continuation cursor or coverage warnings. |
+| `readContent` | `courseId` and `contentId` | Authorized Page content or PDF with its title and canonical source URL. Return a typed error for denied access, an unavailable item, unsupported content, or a service failure. |
 
 Start from the existing `CourseResource` and `ResourceListing` metadata. Deduplicate items across discovery routes by course, resource type, and resource ID, retaining module locations. An empty home leaves the Pages, Files, and Modules discovery routes available. Modules organize Page and PDF entries. Announcement and assignment entries can be added through the existing UC5 and UC6 retrieval paths if the catalog expands.
 
-The catalog holds metadata. Swing and the agent read item contents on demand. The server validates course scope and item permissions for every read. For the MVP, UC2 searches one selected course and reads up to three distinct items per question. UC2 assembles citations from the items actually read.
+The catalog holds metadata. In-app Page previews and the agent read item contents on demand. Browser actions use the Canvas source links. The server validates course scope and item permissions for every read. For the MVP, UC2 searches one selected course and reads up to three distinct items per question. Apply that limit to the combined default, selected, and agent-chosen references. Show the limit before submission if configured and selected references already exceed it. UC2 assembles citations from the items actually read.
 
 ### Other shared contracts
 
@@ -177,9 +179,9 @@ The current Java prototype exposes `list_courses`, `list_resources`, and `read_p
 
 ## 7. UC2 and UC3 Demonstration
 
-1. In UC3, select a course and open the Project Timeline from its catalog. Swing shows the Page and its source link.
-2. Pass the selected item to UC2 and ask a question in Swing.
-3. UC2 reads the selected source. If the question needs information about evaluation, the agent can choose Project Expectations from the same catalog and request that item.
+1. In UC3, open the course and follow a Page link in the custom HTML home. Swing shows the Page preview and its original Canvas link. In a Modules-based course, expand a module and open a resource in the browser.
+2. Select the Project Timeline as a reference and ask a question in the UC2 panel.
+3. UC2 reads the selected source along with any configured default references. If the question needs information about evaluation, the agent can choose Project Expectations from the same catalog.
 4. Swing shows the answer and links to the retrieved sources. Repeat with a permitted PDF to verify the document path.
 
 Use fixture catalogs to verify browse, access errors, and the choice to read another item. Use a live smoke test to verify the Canvas and Gemini integrations.

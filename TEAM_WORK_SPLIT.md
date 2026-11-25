@@ -24,7 +24,7 @@ A **module owner** is responsible for its shared contracts, integration readines
 |----------------------------------|-------------------------------------|-------------------------------------------------------------------|
 | UC1 - Manage Local To-Do         | **Yue Tang (`@happy-soup`)**        | Create/list/complete/delete and persisted state                   |
 | UC2 - Find and Ask About Canvas Resources | **Chris Li (`@chrislxn`)** | Ask about a Page or PDF, let the agent choose a relevant additional item when needed, and show the answer with citations |
-| UC3 - Browse and Read Canvas Course Content | **Rosalind Zhou (`@RosalindZhou`)** | Select a course, browse its catalog in Swing, and click an item to load it. Demonstrate a course with an empty home and content in Modules. |
+| UC3 - Browse and Read Canvas Course Content | **Rosalind Zhou (`@RosalindZhou`)** | Open a course, follow linked Pages within the HTML preview, and demonstrate native Modules expansion and browser opening in a Modules-based course. |
 | UC4 - Save and Reopen Course Resources | **TBD** | Save a source from search results or an answer citation, then reopen or remove it after a restart |
 | UC5 - Summarize Announcements    | **Ran Yan (`@Asp-hyxia`)**          | Dated summary with Canvas source links                            |
 | UC6 - Generate Deadline Briefing | **TBD**                             | Ordered upcoming deadlines and an informative briefing            |
@@ -47,10 +47,10 @@ A **module owner** is responsible for its shared contracts, integration readines
 
 ## 4. UC2 and UC3 Handoff
 
-- **Rosalind, UC3.** Own the browsing UI, the Canvas REST adapter, and MCP tool handlers. Build a metadata catalog per selected course from the home, Pages, Files, and Modules. Verify access and retrieve one item's content when the UI or the agent requests it.
+- **Rosalind, UC3.** Own course setup, the browsing UI, the Canvas REST adapter, and MCP tool handlers. Build the shared catalog, preview Pages as HTML, and use native Modules with browser opens for module resources. Verify access on each content request. See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md).
 - **Chris, UC2.** Own search and Page/PDF question answering in Swing. Use the shared catalog through M2, decide which entries the agent can request, and display citations for retrieved sources.
 - **Rosalind, M1.** Supply reusable Gemini requests, tool-call handling, and model errors. Chris defines source selection and reading limits for UC2.
-- **Integration.** Pass the selected course and content ID when the student opens the question view from UC3. Develop against a fixture catalog and typed read results while the live Canvas adapter is in progress.
+- **Integration.** Use the course ID, shared catalog, configured defaults, and selected reference IDs for questions in the same Swing window. Develop against a fixture catalog and typed read results while the live Canvas adapter is in progress.
 
 ## 5. Development Workflow
 
