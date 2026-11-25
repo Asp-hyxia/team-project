@@ -25,7 +25,7 @@ A **module owner** is responsible for its shared contracts, integration readines
 | UC1 - Manage Local To-Do         | **Yue Tang (`@happy-soup`)**        | Create/list/complete/delete and persisted state                   |
 | UC2 - Find and Ask About Canvas Resources | **Chris Li (`@chrislxn`)** | Ask about a Page or PDF, let the agent choose a relevant additional item when needed, and show the answer with citations |
 | UC3 - Browse and Read Canvas Course Content | **Rosalind Zhou (`@RosalindZhou`)** | Open a course, follow linked Pages within the HTML preview, and demonstrate native Modules expansion and browser opening in a Modules-based course. |
-| UC4 - Save and Reopen Course Resources | **TBD** | Save a source from search results or an answer citation, then reopen or remove it after a restart |
+| UC4 - Save and Reopen Course Resources | **Sophia Yang (`@sophiaysh16-spec`)** | Save a source from search results or an answer citation, then reopen or remove it after a restart |
 | UC5 - Summarize Announcements    | **Ran Yan (`@Asp-hyxia`)**          | Dated summary with Canvas source links                            |
 | UC6 - Generate Deadline Briefing | **TBD**                             | Ordered upcoming deadlines and an informative briefing            |
 
