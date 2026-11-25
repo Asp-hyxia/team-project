@@ -76,6 +76,8 @@ Keep Canvas locators, access checks, and authenticated reads in the UC3 adapter 
 
 Rosalind owns the Canvas adapter, UC3 tool handlers, and browse UI. Chris owns the MCP client integration and UC2's reference and question flow. M1 supplies the shared Gemini client.
 
+The configured courses and authenticated Canvas adapter also support announcement reads for UC5 and assignment due-date reads for UC6. Those workflows use their own input boundaries and Presenter. UC4 can save the title and Canvas source link of a catalog entry. See [academic workflows](ACADEMIC_WORKFLOWS.md).
+
 ## 4. Loading, errors, and acceptance
 
 Run Canvas requests off the Swing event-dispatch thread, then publish the result through the Presenter and ViewModel. Show loading and retry at the level being fetched. Keep the rest of the course visible when one branch fails. An invalid connection, a locked item, an empty list, and a partial catalog should produce different messages.

@@ -4,7 +4,7 @@
 > **Last revised:** November 25, 2026
 >
 > **Branch for proposed changes:** `test`  
-> **Ownership:** Rosalind Zhou (`@RosalindZhou`) leads M1 and UC3. Chris Li (`@chrislxn`) leads M2 and UC2. Yue Tang leads M4 and UC1, and Ran Yan leads UC5. See [Team Work Split](TEAM_WORK_SPLIT.md).
+> **Ownership:** Rosalind Zhou (`@RosalindZhou`) leads M1 and UC3. Chris Li (`@chrislxn`) leads M2 and UC2. Yue Tang leads M4 and UC1, Sophia Yang leads UC4, and Ran Yan leads UC5. See [Team Work Split](TEAM_WORK_SPLIT.md).
 
 ## 1. Project Overview
 
@@ -28,11 +28,11 @@ The AI agent decides which approved read-only tool to call in response to a user
 | P0 | AI tool-calling loop | The model chooses relevant catalog items, and Java dispatches approved item reads |
 | P0 | Canvas access through MCP | UC3 provides a shared course catalog and on-demand reads through the Java Canvas MCP server |
 | P0 | Browse Canvas course content in UC3 | Preview custom HTML or show native Modules, and open sources through the appropriate view |
-| P0 | Local To-Do with persistence | Owned by one member as a complete feature |
+| P0 | Local To-Do with persistence | Create personal tasks directly or add a deadline from UC6 |
 | P0 | Search and ask about Canvas resources in UC2 | Answer from Pages and PDFs and cite the sources actually read |
 | P0 | Saved course resources in UC4 | Save, reopen, and remove source links |
-| P0 | Announcement summaries | Dated summaries with Canvas source links |
-| P0 | Upcoming-deadline briefings | Canvas assignments; optional inclusion of local tasks |
+| P0 | Announcement summaries | Summarize one announcement at a time and record sourced deadline evidence |
+| P0 | Upcoming-deadline briefings | Merge Canvas assignment due dates and UC5 evidence, then offer **Add to To-Do** |
 | Out | Outlook / Microsoft To Do synchronization | Local To-Do only |
 | Out | Canvas write operations, autonomous submissions, or message posting | Read-only MCP tool allowlist |
 | Out | Background system notifications, full LMS mirroring, OCR and vector database | Not required for MVP |
@@ -41,30 +41,30 @@ The AI agent decides which approved read-only tool to call in response to a user
 
 ## 3. Proposed User Stories and Use Cases
 
-UC3 lets students browse and open Canvas content. UC2 searches the same catalog and uses it for Page and PDF questions.
+UC3 lets students browse and open Canvas content. UC2 searches the same catalog and uses it for Page and PDF questions. UC5 and UC6 share a deadline repository, and UC6 can send a selected deadline to UC1.
 
 | ID | User Story | Use Case | Priority | Lead |
 | --- | --- | --- | --- | --- |
 | UC1 | As a student, I want to manage my personal study tasks without switching between apps, so I can keep track of my work. | **Manage Local To-Do** | P0 | **Yue Tang (`@happy-soup`)** |
 | UC2 | As a student, I want to search course resources and ask about Pages or PDFs, so I can get answers that cite the relevant material. | **Find and Ask About Canvas Resources** | P0 | **Chris Li (`@chrislxn`)** |
 | UC3 | As a student, I want to browse a course's available resources and open an item, so I can find content across different Canvas layouts. | **Browse and Read Canvas Course Content** | P0 | **Rosalind Zhou (`@RosalindZhou`)** |
-| UC4 | As a student, I want to save useful course sources, so I can reopen them without repeating a search. | **Save and Reopen Course Resources** | P0 | TBD |
-| UC5 | As a student, I want a summary of recent course announcements, so I can identify important updates. | **Summarize Announcements** | P0 | **Ran Yan (`@Asp-hyxia`)** |
-| UC6 | As a student, I want a briefing of approaching deadlines, so I can prioritize my academic work. | **Generate Deadline Briefing** | P0 | TBD |
+| UC4 | As a student, I want to save useful course sources, so I can reopen them without repeating a search. | **Save and Reopen Course Resources** | P0 | **Sophia Yang (`@sophiaysh16-spec`)** |
+| UC5 | As a student, I want to summarize an announcement and capture dates it mentions, so I can act on updates posted by my instructors. | **Summarize Announcements** | P0 | **Ran Yan (`@Asp-hyxia`)** |
+| UC6 | As a student, I want one timeline of upcoming deadlines with an option to add a task, so I can organize my work across courses. | **Generate Deadline Briefing** | P0 | TBD |
 
 ### UC1 - Manage Local To-Do
 
-- **Input:** task title, optional due date, and a requested action (create, view, complete, reopen, or delete).
+- **Input:** a task action in To-Do, or a UC6 request with a deadline ID, title, due value, and source link.
 - **Success:** the action updates the local task list and persists between application launches.
 - **Failure:** blank/invalid title, invalid date, or missing task results in a clear error.
-- **Boundary:** no Microsoft Graph, Outlook, or third-party To-Do synchronization.
+- **Integration:** UC1 owns local task persistence. Its create boundary returns an existing task when UC6 submits the same deadline again.
 
 ### UC2 - Find and Ask About Canvas Resources (Lead: Chris Li)
 
 - **Input:** a selected course and a search query or question, with optional configured defaults and selected Page or PDF IDs.
 - **Success:** search returns matching catalog entries. For questions, the agent uses configured and selected references, reads whole items by ID, and can choose relevant additional entries from the shared catalog. Swing displays the answer and original links for the sources used.
 - **Failure:** report empty search results, inaccessible sources, unsupported files or size limits, insufficient evidence, and model or service errors.
-- **Integration:** Chris owns UC2's UI, prompts, source selection, reading limits, and Page/PDF model input. UC2 uses Rosalind's shared M1 Gemini client and the UC3 content contract over MCP.
+- **Integration:** Chris owns UC2's UI, prompts, source selection, reading limits, and Page/PDF model input. UC2 uses Rosalind's shared M1 Gemini client and the UC3 content contract over MCP. Chris also supplies the shared analysis entry point that returns an announcement summary and deadline candidates to UC5.
 - **Acceptance:** ask about a selected Page or PDF. With a fixture question that requires another item, verify the agent finds it in the catalog and cites both sources. A question answered by the initial item should finish with one read.
 
 ### UC3 - Browse and Read Canvas Course Content (Lead: Rosalind Zhou)
@@ -72,38 +72,43 @@ UC3 lets students browse and open Canvas content. UC2 searches the same catalog 
 - **Input:** add a course by URL and Canvas connection, or open a configured course. Then follow a Page link, expand a module, or open a resource.
 - **Success:** Swing renders a custom home as HTML or shows Modules in a native list. Links to supported Pages from the HTML preview continue in that pane. Files and Page or file rows in Modules open in the browser. The catalog combines Page and PDF metadata from course discovery routes.
 - **Failure:** distinguish an empty catalog from a partial catalog or access failure. Report an inaccessible item when selected and keep the other available entries visible.
-- **Integration:** Rosalind owns UC3's browsing UI and the Canvas REST adapter and MCP tool handlers for the shared catalog and authorized item reads.
+- **Integration:** Rosalind owns UC3's browsing UI, Canvas REST adapter, and MCP tool handlers for authorized reads. UC5 and UC6 use the shared Canvas connection for announcements and assignments.
 - **Acceptance:** follow a Page link inside a custom HTML home, then expand Modules and open a module resource in the browser. Verify that a UC2 read of the same resource succeeds by catalog ID.
 
 See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md) for course setup, rendering, link routing, and detailed acceptance scenarios.
 
 ### UC4 - Save and Reopen Course Resources
 
-- **Input:** save a source from search results or an answer citation, or select a saved source to open or remove.
+- **Input:** save a title and link from a UC3 catalog entry or a UC2 answer citation, or select a saved source to open or remove.
 - **Success:** saved titles and links survive a restart. Opening a saved link takes the student to the original Canvas source.
 - **Failure:** report an invalid link or local persistence error.
 - **Boundary:** store source metadata locally. Canvas checks access when the link is opened.
 
 ### UC5 - Summarize Announcements
 
-- **Input:** selected course(s) and a recent time window.
-- **Success:** the agent retrieves permitted announcements and presents a concise, dated summary with source links and actionable items.
-- **Boundary:** do not claim an announcement is current without checking its retrieval time.
+- **Input:** click **Summarize** on one announcement in a course group on the Dashboard.
+- **Success:** retrieve the selected announcement, call the shared AI analysis interface, and display the summary through the UC5 Presenter. Save deadline evidence grounded in the announcement to the shared repository.
+- **Failure:** identify the affected course or announcement and let the student retry a failed read or analysis.
+- **Integration:** UC5 owns the course groups, announcement actions, evidence validation, and its own Presenter. A weekly briefing can yield multiple deadline candidates.
 
 ### UC6 - Generate Deadline Briefing
 
-- **Input:** requested period (for example, the next seven days).
-- **Success:** the program reads assignments and due dates via MCP, orders them by actual deadline, and displays an informative briefing. A local task list may be included if time permits.
-- **Boundary:** suggestions are not official course deadlines; ordering and filtering should be independently testable without an LLM.
+- **Input:** choose a date range in **Upcoming deadlines**, or select a row to add it to To-Do.
+- **Success:** combine Canvas assignment due dates with UC5's announcement evidence in one ordered timeline. Display their sources and flag ambiguous or conflicting dates for review.
+- **Integration:** UC6 owns deadline reconciliation, filtering, and the timeline UI. **Add to To-Do** calls the UC1 create-task boundary with the deadline's title, due value, stable ID, and source link.
+
+See [academic workflows](docs/ACADEMIC_WORKFLOWS.md) for UC1, UC4, UC5, and UC6 acceptance cases and shared interfaces.
 
 ## 4. Domain Model (Initial)
 
 | Entity / value object | Suggested fields                                | Purpose                                                     |
 |-----------------------|-------------------------------------------------|-------------------------------------------------------------|
-| `Task`                | `id`, `title`, `dueAt`, `completed`             | Locally persisted personal task and its completion behavior |
+| `Task`                | `id`, `title`, optional due date or time, `completed`, optional deadline ID and source link | Locally persisted personal task and its completion behavior |
 | `Course`              | `id`, `name`, `courseCode`                      | A course returned by Canvas                                 |
 | `CourseResource`      | `id`, `courseId`, `title`, `type`, `sourceUrl`  | Catalog metadata for a Canvas Page or file                   |
-| `AcademicDeadline`    | `id`, `courseId`, `title`, `dueAt`, `sourceUrl` | Due dates for briefing and presentation                     |
+| `Announcement`       | `id`, `courseId`, title, posted time, body, source URL | Source for UC5 summaries and deadline discovery |
+| `AcademicDeadline`    | `id`, `courseId`, `title`, due date or time when known, source evidence | Shared deadline record for UC5 and UC6 |
+| `DeadlineEvidence`    | Source kind, source ID or URL, reported date or time, supporting wording when applicable | Evidence for merging and checking deadline dates |
 | `SourceReference`     | `title`, `url`                                  | Value object attached to AI answers                         |
 
 These are application models, **not** the raw JSON structures returned by Canvas or MCP. Do not add fields and classes until a Use Case requires them. We should document class attributes and relevant methods in the README or an accompanying UML class diagram before the final presentation.
@@ -159,9 +164,10 @@ The catalog holds metadata. In-app Page previews and the agent read item content
 
 ### Other shared contracts
 
-- `AgentGateway`: shared model access for questions with retrieved Page or PDF content and approved tools. M1 and UC2 agree on model input formats and error mapping.
+- `AgentGateway`: shared model access for course questions and announcement analysis. M1 and UC2 agree on model input formats and error mapping.
 - `McpToolGateway`: `listTools()` and `callTool(name, args)` provide controlled access to approved MCP functions.
-- `TaskRepository`: save, find, list and delete local tasks.
+- `DeadlineRepository`: store announcement evidence from UC5 and assignment evidence from UC6, and return the merged timeline for UC6.
+- UC1 create-task boundary: accept a deadline reference from UC6. UC1 uses its `TaskRepository` to save, find, list, and delete local tasks.
 - `DocumentGateway`: planned PDF handoff between authorized retrieval and model input.
 - `Clock`: current date/time for deterministic deadline logic, if needed.
 
@@ -173,7 +179,7 @@ The current Java prototype exposes `list_courses`, `list_resources`, and `read_p
 
 **LLM provider.** M1 supplies the shared Gemini client. The current prototype supports Page answers. The revised UC2 also needs PDF input and tool requests for additional catalog items.
 
-**Local persistence:** Personal To-Do data and saved resource metadata can use JSON or another simple local format behind DAOs. A Canvas cache is optional and should be on demand, associated with source and fetch timestamps; stale content must be distinguishable from freshly retrieved information.
+**Local persistence.** Personal tasks, saved links, and shared deadline records can use JSON or another simple local format behind repositories. Canvas cache entries should show their fetch timestamps and freshness.
 
 **Security constraints:** Never commit Canvas or LLM tokens, `.env` files containing secrets, downloaded private course material, or cached credentials. Keep Canvas tools read-only. Use an allowlist of permitted tool calls. Treat LMS text and PDF content as untrusted data; it must not override program safety rules or authorize extra operations.
 
