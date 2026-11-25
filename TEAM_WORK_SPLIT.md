@@ -3,14 +3,15 @@
 > **Status:** Draft for team approval.  
 > **Last revised:** November 25, 2026.
 >
-> **Rule:** M1 / UC3 are claimed by Rosalind Zhou; M2 and the merged UC2 (formerly UC2 and UC4) are owned by Chris Li; M4 / UC1 are claimed by Yue Tang; UC5 is led by Ran Yan. All remaining assignments are TBD until accepted by the team.
+> **Work split:** Rosalind Zhou leads M1 and UC3. Chris Li leads M2 and UC2. Yue Tang leads M4 and UC1, and Ran Yan leads UC5. Remaining owners are TBD.
+
 ## 1. Module Ownership
 
 | Module                               | Owner                               | Responsibilities                                                                                                         | First Deliverable                                                   |
 |--------------------------------------|-------------------------------------|--------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
-| M1 - AI Agent Core                   | **Rosalind Zhou (`@RosalindZhou`)** | LLM API adapter, prompt/tool loop, approved tool selection, provider errors                                              | Fake-tool call works from Java, then connect to MCP                 |
-| M2 - MCP & Canvas Integration        | **Chris Li (`@chrislxn`)**          | Java MCP Client, integration with existing Python Canvas MCP Server, Canvas read-only tools and typed resource discovery | Java calls a live Canvas tool via MCP and returns a resource result |
-| M3 - Document Handling               | **TBD**                             | Canvas file retrieval, optional on-demand cache, PDF input to selected model                                             | One accessible PDF can be passed to the model                       |
+| M1 - AI Agent Core                   | **Rosalind Zhou (`@RosalindZhou`)** | Shared Gemini client, tool-call protocol, and provider errors | A shared model request returns an answer or a typed provider error |
+| M2 - MCP Client Integration          | **Chris Li (`@chrislxn`)** | Java MCP client integration with the UC3 catalog and item-reader contracts | Java consumes the catalog and reads one item through MCP |
+| M3 - Document Handling               | **TBD** | PDF validation and document handoff | An authorized PDF can be passed to the model |
 | M4 - Local Storage & To-Do           | **Yue Tang (`@happy-soup`)**        | Task Entity, task operations, file-based DAO, task tests                                                                 | Tasks can be created/completed and survive restart                  |
 | M5 - Swing Frontend                  | **TBD**                             | Shared Swing screens and UI conventions; ViewModels, Controllers/Presenters coordination                                 | Chat view with working submit/status/result flow                    |
 | M6 - Academic Features & Integration | **TBD**                             | Announcements/deadlines business rules, app composition and integration support                                          | A runnable deadline/announcement workflow and AppBuilder wiring     |
@@ -22,8 +23,8 @@ A **module owner** is responsible for its shared contracts, integration readines
 | Use Case                         | Lead                                | Acceptance Evidence                                               |
 |----------------------------------|-------------------------------------|-------------------------------------------------------------------|
 | UC1 - Manage Local To-Do         | **Yue Tang (`@happy-soup`)**        | Create/list/complete/delete and persisted state                   |
-| UC2 - Find and Ask About Canvas Resources | **Chris Li (`@chrislxn`)** | Find Pages and files through MCP, ask about an accessible PDF, and receive an answer citing the Canvas file |
-| UC3 - Ask About Canvas Pages     | **Rosalind Zhou (`@RosalindZhou`)** | Agent reads a Page and answers with a source link                 |
+| UC2 - Find and Ask About Canvas Resources | **Chris Li (`@chrislxn`)** | Ask about a Page or PDF, let the agent choose a relevant additional item when needed, and show the answer with citations |
+| UC3 - Browse and Read Canvas Course Content | **Rosalind Zhou (`@RosalindZhou`)** | Select a course, browse its catalog in Swing, and click an item to load it. Demonstrate a course with an empty home and content in Modules. |
 | UC4 - Save and Reopen Course Resources | **TBD** | Save a source from search results or an answer citation, then reopen or remove it after a restart |
 | UC5 - Summarize Announcements    | **Ran Yan (`@Asp-hyxia`)**          | Dated summary with Canvas source links                            |
 | UC6 - Generate Deadline Briefing | **TBD**                             | Ordered upcoming deadlines and an informative briefing            |
@@ -34,34 +35,22 @@ A **module owner** is responsible for its shared contracts, integration readines
 
 | Interface / contract                | Responsible module     | Consumers                  | Decision status                                    |
 |-------------------------------------|------------------------|----------------------------|----------------------------------------------------|
-| `AgentGateway`                      | **M1 (Rosalind Zhou)** | UC2, UC3, UC5 and UC6 where AI is needed | Signature TBD |
-| `McpToolGateway`                    | **M2 (Chris Li)**      | M1, M3, academic features  | Actual Python server tools/transport to be audited |
+| `AgentGateway`                      | **M1 (Rosalind Zhou)** | UC2, UC5 and UC6 where AI is needed | Agree on Page/PDF input and tool-call responses |
+| `McpToolGateway`                    | **M2 (Chris Li)** | UC2, UC3 and academic features | Existing Java transport, new catalog and item-read tools planned |
+| `listContent` / `readContent`     | **UC3 (Rosalind Zhou)** supplies Canvas data, **M2 (Chris Li)** integrates the client | Swing catalog and UC2 agent | See [shared content contract](PROJECT_BLUEPRINT.md#shared-course-content-contract) |
 | `DocumentGateway`                   | M3                     | UC2, M1                    | Signature TBD                                      |
 | `TaskRepository`                    | **M4 (Yue Tang)**      | UC1, optionally UC6        | Signature TBD                                      |
-| Shared Chat UI / ViewModel contract | M5                     | UC2, UC3, UC5 and UC6      | Signature TBD                                      |
+| Shared Swing UI / ViewModel contracts | M5 | UC2, UC3, UC5 and UC6 | Agree on catalog selection, loading, and result states |
 | AppBuilder composition              | M6                     | All modules                | Wiring plan TBD                                    |
 
 **Integration contract:** Agree on DTOs, error types, and async execution boundaries before each person implements a concrete adapter. Use fake interfaces to avoid waiting for the real services.
 
-## 4. Module 2: Confirmed Owner's First PR
+## 4. UC2 and UC3 Handoff
 
-**Owner:** Chris Li (`@chrislxn`)  
-**Module:** MCP & Canvas Integration  
-**Use Case Lead:** UC2 - Find and Ask About Canvas Resources
-
-For UC2, Chris owns the resource search and PDF question flow, including MCP client integration and prompt and tool behavior for PDF questions. UC2 uses the shared M1 agent and the authorized Canvas API retrieval supplied through UC3.
-
-### Deliverables
-
-- [ ] Document the Python Canvas MCP Server's actual transport, commands, tool names and required arguments (without secrets).
-- [ ] Implement a Java-facing MCP gateway and concrete adapter; avoid exposing MCP SDK types in Use Case interfaces.
-- [ ] Demonstrate that the Java application can invoke at least one live, read-only Canvas MCP tool.
-- [ ] Provide resource-discovery output with title, resource type, course and source URL where available.
-- [ ] Implement or coordinate UC2's Controller, Interactor, Presenter and Swing integration.
-- [ ] Include tests for happy path, empty results and connection/tool failures using fakes.
-- [ ] Submit a substantial code PR and review one teammate's PR by **November 20**.
-
-**Existing Python server note:** Previously developed code may be reused as infrastructure, but the team's fresh Java integration, tests, documentation, review, and demonstrable Use Case contributions should be visible in Git history. Confirm with the TA if any course-specific attribution questions arise.
+- **Rosalind, UC3.** Own the browsing UI, the Canvas REST adapter, and MCP tool handlers. Build a metadata catalog per selected course from the home, Pages, Files, and Modules. Verify access and retrieve one item's content when the UI or the agent requests it.
+- **Chris, UC2.** Own search and Page/PDF question answering in Swing. Use the shared catalog through M2, decide which entries the agent can request, and display citations for retrieved sources.
+- **Rosalind, M1.** Supply reusable Gemini requests, tool-call handling, and model errors. Chris defines source selection and reading limits for UC2.
+- **Integration.** Pass the selected course and content ID when the student opens the question view from UC3. Develop against a fixture catalog and typed read results while the live Canvas adapter is in progress.
 
 ## 5. Development Workflow
 
@@ -84,11 +73,10 @@ For UC2, Chris owns the resource search and PDF question flow, including MCP cli
 
 ## 6. Immediate Action Items
 
-| Deadline | Team action                                                                                     | Owner                             |
-|----------|-------------------------------------------------------------------------------------------------|-----------------------------------|
-| Nov 17   | Confirm scope, actual team size and remaining ownership                                         | **TBD**                           |
-| Nov 18   | Freeze minimal shared interface contracts and validate tool access                              | **M2: Chris Li; others TBD**      |
-| Nov 19   | Integrate the first Swing-to-Canvas AI vertical slice                                           | **TBD**                           |
-| Nov 20   | Demonstrate one end-to-end Use Case, external API calls, individual substantial PRs and reviews | All members (specific owners TBD) |
+| Team action | Owner |
+| --- | --- |
+| Agree on catalog fields, content IDs, pagination, and read errors | Chris and Rosalind |
+| Verify catalog browsing and one-item reads in courses with different layouts | Rosalind |
+| Test when the UC2 agent should request an additional item and which sources appear in the answer | Chris |
 
 See [Project Blueprint](PROJECT_BLUEPRINT.md) for product scope, Use Cases, architecture and milestone requirements.
