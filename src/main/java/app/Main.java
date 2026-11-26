@@ -10,10 +10,12 @@ import infrastructure.mcp.CanvasMcpServer;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -25,6 +27,10 @@ public final class Main {
 
     public static void main(String[] args) {
         ExecutorService worker = Executors.newFixedThreadPool(2);
+        if (Arrays.asList(args).contains("--uc2-demo")) {
+            SwingUtilities.invokeLater(() -> showWindow(AppBuilder.buildUc2Demo(worker), worker, null));
+            return;
+        }
         CanvasMcpServer localServer = null;
         try {
             String mcpUrl = System.getenv("MCP_URL");
@@ -43,20 +49,9 @@ public final class Main {
             AgentGateway agent = System.getenv("GEMINI_API_KEY") == null || System.getenv("GEMINI_API_KEY").isBlank()
                     ? new UnconfiguredAgentGateway() : GeminiAgentGateway.fromEnvironment();
             CanvasMcpServer server = localServer;
-            SwingUtilities.invokeLater(() -> {
-                JFrame frame = new JFrame("Canvas Academic Assistant");
-                frame.setContentPane(AppBuilder.build(new McpResourceGateway(tools), new McpPageGateway(tools), agent, worker));
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                frame.addWindowListener(new WindowAdapter() {
-                    @Override public void windowClosed(WindowEvent event) {
-                        worker.shutdownNow();
-                        if (server != null) { server.close(); }
-                    }
-                });
-                frame.setSize(1150, 650);
-                frame.setLocationRelativeTo(null);
-                frame.setVisible(true);
-            });
+            SwingUtilities.invokeLater(() -> showWindow(
+                    AppBuilder.build(new McpResourceGateway(tools), new McpPageGateway(tools), agent, worker),
+                    worker, server));
         }
         catch (Exception exception) {
             worker.shutdownNow();
@@ -65,6 +60,23 @@ public final class Main {
                     "Check CANVAS_ORIGIN/CANVAS_TOKEN or MCP_URL/MCP_TOKEN, and GEMINI_API_KEY/GEMINI_MODEL.",
                     "Application configuration", JOptionPane.ERROR_MESSAGE));
         }
+    }
+
+    private static void showWindow(JComponent contents, ExecutorService worker, CanvasMcpServer server) {
+        JFrame frame = new JFrame("Canvas Academic Assistant");
+        frame.setContentPane(contents);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override public void windowClosed(WindowEvent event) {
+                worker.shutdownNow();
+                if (server != null) {
+                    server.close();
+                }
+            }
+        });
+        frame.setSize(1150, 650);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
     private static String required(String name) {

@@ -53,6 +53,14 @@ Each of the six members must lead at least one MVP use case. UC1–UC6 are in sc
 
 Requires JDK 11+ and Maven. Run `mvn test` for offline tests; API keys are unnecessary for these tests.
 
+### UC2 offline Page question demo
+
+Run `app.Main` in IntelliJ with `--uc2-demo` in **Program arguments**. Enter **When is the project demo?** and select the Project Timeline or use the course default, then click **Send**. Swing displays the simulated answer followed by the title and example Canvas URL of the Page it read.
+
+The UC2 Interactor depends on two Java interfaces. `CourseContentGateway` lists resources and reads a whole Page by course and content ID. `QuestionModelGateway` accepts an `AnswerPrompt` and returns the answer. The demo supplies both implementations locally and needs no credentials. The demo citation points to an example Canvas domain.
+
+### Live prototype
+
 For a live demo, import `pom.xml` in IntelliJ and run `app.Main`. Add these environment variables to its run configuration.
 
 | Variable         | Value                                            |
