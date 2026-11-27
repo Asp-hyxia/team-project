@@ -47,11 +47,28 @@ Each of the six members must lead at least one MVP use case. UC1–UC6 are in sc
 |--------------------------------------------------------------------------|-------------------------------------------------|------------------------------------------------|
 | [Canvas REST API](https://developerdocs.instructure.com/services/canvas) | Read authorized course resources through MCP    | Yes - course listing and Page reading verified |
 | [Gemini API](https://ai.google.dev/api/generate-content)                 | Answer questions using retrieved course content | Yes - verified with `gemini-3.1-flash-lite`    |
+| [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/) | Answer UC2 questions from sample Page text | Live streaming verified with `deepseek-flash` in the Swing demo |
 
 
 ## Run and Test
 
 Requires JDK 11+ and Maven. Run `mvn test` for offline tests; API keys are unnecessary for these tests.
+
+### UC2 offline Page question demo
+
+Run `app.Main` in IntelliJ with `--uc2-demo` in **Program arguments**. Enter **When is the project demo?** and select the Project Timeline or use the course default, then click **Send**. Swing displays the simulated answer followed by the title and example Canvas URL of the Page it read.
+
+The UC2 Interactor depends on two Java interfaces. `CourseContentGateway` lists resources and reads a whole Page by course and content ID. `QuestionModelGateway` accepts an `AnswerPrompt` and returns the answer. The demo supplies both implementations locally and needs no credentials. The demo citation points to an example Canvas domain.
+
+### UC2 DeepSeek Page question demo
+
+Run `app.Main` with `--uc2-deepseek` in **Program arguments**. Set `DEEPSEEK_API_KEY` in the local run configuration and optionally set `DEEPSEEK_MODEL` (defaults to `deepseek-flash`).
+
+Ask the same question as in the offline demo. This mode sends your question and the sample Page text to DeepSeek, displays the answer as it arrives, then adds the sample Page citation. It uses the built-in course and needs no Canvas credentials.
+
+Keep the window open and send a follow-up to continue the conversation. The window shows each question, answer, and source. DeepSeek receives the most recent six completed turns as context and the current turn's Page references as evidence. Closing the window ends the conversation.
+
+### Live prototype
 
 For a live demo, import `pom.xml` in IntelliJ and run `app.Main`. Add these environment variables to its run configuration.
 
@@ -59,7 +76,7 @@ For a live demo, import `pom.xml` in IntelliJ and run `app.Main`. Add these envi
 |------------------|--------------------------------------------------|
 | `CANVAS_ORIGIN`  | Your Canvas origin, e.g. `https://q.utoronto.ca` |
 | `CANVAS_TOKEN`   | Your local Canvas access token                   |
-| `GEMINI_API_KEY` | Your local Gemini API key                        |
-| `GEMINI_MODEL`   | Optional; defaults to `gemini-3.1-flash-lite`    |
+| `GEMINI_API_KEY` | Your local AI API key                        |
+| `GEMINI_MODEL`   | Optional; defaults to `deepseek-flash`    |
 
 In the current prototype, select a course, search resources, select a Page, then choose **Ask about selected page**. If the directory is unavailable, enter a known Page slug (e.g. `project-timeline-2`) and choose **Use page slug**. Ask a question and check the answer and Canvas source link. Credentials belong in local configuration.

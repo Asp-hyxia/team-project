@@ -58,7 +58,8 @@ class GeminiAgentGatewayTest {
         assertEquals("/v1beta/models/test-model:generateContent", path);
         assertTrue(request.path("systemInstruction").toString().contains("untrusted"));
         assertEquals("Question\nWhen is it due?", request.path("contents").path(0).path("parts").path(0).path("text").asText());
-        assertTrue(request.path("contents").path(0).path("parts").path(1).path("text").asText().contains(page.text));
+        assertEquals("Reference material\n" + page.title + "\n" + page.text,
+                request.path("contents").path(0).path("parts").path(1).path("text").asText());
         assertFalse(request.toString().contains("fixture-key"));
     }
 
