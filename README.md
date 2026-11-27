@@ -47,6 +47,7 @@ Each of the six members must lead at least one MVP use case. UC1–UC6 are in sc
 |--------------------------------------------------------------------------|-------------------------------------------------|------------------------------------------------|
 | [Canvas REST API](https://developerdocs.instructure.com/services/canvas) | Read authorized course resources through MCP    | Yes - course listing and Page reading verified |
 | [Gemini API](https://ai.google.dev/api/generate-content)                 | Answer questions using retrieved course content | Yes - verified with `gemini-3.1-flash-lite`    |
+| [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/) | Answer UC2 questions from sample Page text | Local HTTP tests passed; live check pending |
 
 
 ## Run and Test
@@ -58,6 +59,12 @@ Requires JDK 11+ and Maven. Run `mvn test` for offline tests; API keys are unnec
 Run `app.Main` in IntelliJ with `--uc2-demo` in **Program arguments**. Enter **When is the project demo?** and select the Project Timeline or use the course default, then click **Send**. Swing displays the simulated answer followed by the title and example Canvas URL of the Page it read.
 
 The UC2 Interactor depends on two Java interfaces. `CourseContentGateway` lists resources and reads a whole Page by course and content ID. `QuestionModelGateway` accepts an `AnswerPrompt` and returns the answer. The demo supplies both implementations locally and needs no credentials. The demo citation points to an example Canvas domain.
+
+### UC2 DeepSeek Page question demo
+
+Run `app.Main` with `--uc2-deepseek` in **Program arguments**. Set `DEEPSEEK_API_KEY` in the local run configuration and optionally set `DEEPSEEK_MODEL` (defaults to `deepseek-flash`).
+
+Ask the same question as in the offline demo. This mode sends your question and the sample Page text to DeepSeek and displays its answer with the sample Page citation. It uses the built-in course and needs no Canvas credentials.
 
 ### Live prototype
 

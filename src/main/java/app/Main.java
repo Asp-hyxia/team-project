@@ -2,6 +2,7 @@ package app;
 
 import data_access.UnconfiguredAgentGateway;
 import data_access.canvas.CanvasResourceGateway;
+import data_access.deepseek.DeepSeekQuestionModelGateway;
 import data_access.gemini.GeminiAgentGateway;
 import data_access.mcp.HttpMcpToolGateway;
 import data_access.mcp.McpPageGateway;
@@ -20,13 +21,19 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import use_case.ask_page.AgentGateway;
+import use_case.question_answering.CourseQuestionException;
+import use_case.question_answering.QuestionModelGateway;
 
-/** Launch with Canvas origin/token or an existing compatible MCP endpoint/token. */
+/** Launch the Canvas application or a UC2 demo. */
 public final class Main {
     private Main() { }
 
     public static void main(String[] args) {
         ExecutorService worker = Executors.newFixedThreadPool(2);
+        if (Arrays.asList(args).contains("--uc2-deepseek")) {
+            launchDeepSeekDemo(worker);
+            return;
+        }
         if (Arrays.asList(args).contains("--uc2-demo")) {
             SwingUtilities.invokeLater(() -> showWindow(AppBuilder.buildUc2Demo(worker), worker, null));
             return;
@@ -59,6 +66,21 @@ public final class Main {
             SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null,
                     "Check CANVAS_ORIGIN/CANVAS_TOKEN or MCP_URL/MCP_TOKEN, and GEMINI_API_KEY/GEMINI_MODEL.",
                     "Application configuration", JOptionPane.ERROR_MESSAGE));
+        }
+    }
+
+    private static void launchDeepSeekDemo(ExecutorService worker) {
+        try {
+            QuestionModelGateway model = DeepSeekQuestionModelGateway.fromEnvironment();
+            SwingUtilities.invokeLater(() -> showWindow(
+                    AppBuilder.buildUc2Demo(worker, model, "UC2 demo: simulated course and DeepSeek"),
+                    worker, null));
+        }
+        catch (CourseQuestionException exception) {
+            worker.shutdownNow();
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null,
+                    "Set DEEPSEEK_API_KEY in the run configuration to use --uc2-deepseek.",
+                    "DeepSeek configuration", JOptionPane.ERROR_MESSAGE));
         }
     }
 

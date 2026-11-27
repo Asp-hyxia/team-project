@@ -22,24 +22,28 @@ import use_case.ask_page.PageGateway;
 import use_case.find_resources.FindResourcesInteractor;
 import use_case.find_resources.ResourceGateway;
 import use_case.question_answering.CourseQuestionInteractor;
+import use_case.question_answering.QuestionModelGateway;
 import view.AskPageView;
 import view.CourseQuestionView;
 import view.ResourcesView;
 
-/** Composition root joins existing UC2 resource discovery to UC3 selected-page Q&A. */
+/** Assembles the desktop workflows and their adapters. */
 public final class AppBuilder {
     private AppBuilder() { }
 
     public static CourseQuestionView buildUc2Demo(Executor worker) {
+        return buildUc2Demo(worker, new DemoQuestionModelGateway(), "UC2 demo: simulated course and AI");
+    }
+
+    public static CourseQuestionView buildUc2Demo(Executor worker, QuestionModelGateway model, String title) {
         CourseQuestionViewModel viewModel = new CourseQuestionViewModel();
         CourseQuestionPresenter presenter = new CourseQuestionPresenter(viewModel);
         CourseQuestionInteractor interactor = new CourseQuestionInteractor(
-                new DemoCourseContentGateway(), new DemoQuestionModelGateway(),
+                new DemoCourseContentGateway(), model,
                 courseId -> courseId == DemoCourseContentGateway.COURSE_ID
                         ? List.of(DemoCourseContentGateway.TIMELINE_ID) : List.of(), presenter);
         CourseQuestionController controller = new CourseQuestionController(interactor, worker, presenter);
-        return new CourseQuestionView(controller, viewModel, DemoCourseContentGateway.COURSE_ID,
-                "UC2 demo: simulated course and AI");
+        return new CourseQuestionView(controller, viewModel, DemoCourseContentGateway.COURSE_ID, title);
     }
 
     public static JTabbedPane build(ResourceGateway resources, PageGateway pages, AgentGateway agent, Executor worker) {
