@@ -67,7 +67,7 @@ For a live demo, import `pom.xml` in IntelliJ and run `app.Main`. Add these envi
 |------------------|--------------------------------------------------|
 | `CANVAS_ORIGIN`  | Your Canvas origin, e.g. `https://q.utoronto.ca` |
 | `CANVAS_TOKEN`   | Your local Canvas access token                   |
-| `GEMINI_API_KEY` | Your local Gemini API key                        |
-| `GEMINI_MODEL`   | Optional; defaults to `gemini-3.1-flash-lite`    |
+| `GEMINI_API_KEY` | Your local AI API key                        |
+| `GEMINI_MODEL`   | Optional; defaults to `deepseek-flash`    |
 
 In the current prototype, select a course, search resources, select a Page, then choose **Ask about selected page**. If the directory is unavailable, enter a known Page slug (e.g. `project-timeline-2`) and choose **Use page slug**. Ask a question and check the answer and Canvas source link. Credentials belong in local configuration.
