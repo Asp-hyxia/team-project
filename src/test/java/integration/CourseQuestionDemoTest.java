@@ -52,6 +52,28 @@ class CourseQuestionDemoTest {
         assertTrue(sentPrompt.get().getUserParts().get(1).contains("The project demo is on Friday at 2:00 p.m."));
     }
 
+    @Test
+    void followsUpInTheSameWindowAndKeepsBothAnswersAndTheirSources() throws Exception {
+        AtomicReference<CourseQuestionView> demo = new AtomicReference<>();
+        SwingUtilities.invokeAndWait(() -> demo.set(AppBuilder.buildUc2Demo(Runnable::run, prompt -> {
+            if (prompt.getHistory().isEmpty()) {
+                return "The project demo is on Friday.";
+            }
+            AnswerPrompt.Turn first = prompt.getHistory().get(0);
+            assertEquals("What day is the demo?", first.question);
+            assertEquals("The project demo is on Friday.", first.answer);
+            assertEquals("Question\nWhat time is it?", prompt.getUserParts().get(0));
+            return "It starts at 2:00 p.m.";
+        }, "UC2 model demo")));
+
+        String firstTurn = askQuestion(demo.get(), true, "What day is the demo?");
+        assertResult(firstTurn, "The project demo is on Friday.");
+
+        String transcript = askQuestion(demo.get(), true, "What time is it?");
+        assertTrue(transcript.startsWith(firstTurn + "\n\nYou\nWhat time is it?\n\nAssistant\n"));
+        assertResult(transcript.substring(firstTurn.length()), "It starts at 2:00 p.m.");
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void showsDeltasWhileTheWorkerIsStillRunningAndHandlesTheFinalResult(boolean interrupted) throws Exception {
@@ -96,7 +118,7 @@ class CourseQuestionDemoTest {
                 JTextArea answer = textArea(panel, false);
                 answer.getDocument().addDocumentListener(new DocumentListener() {
                     @Override public void insertUpdate(DocumentEvent event) {
-                        if ("The project demo".equals(answer.getText())) {
+                        if (answer.getText().endsWith("\nAssistant\nThe project demo")) {
                             deltaDisplayed.countDown();
                         }
                     }
@@ -118,7 +140,8 @@ class CourseQuestionDemoTest {
             });
             assertTrue(deltaDisplayed.await(5, TimeUnit.SECONDS));
             SwingUtilities.invokeAndWait(() -> {
-                assertEquals("The project demo", textArea(demo.get(), false).getText());
+                assertEquals("You\nWhen is the project demo?\n\nAssistant\nThe project demo",
+                        textArea(demo.get(), false).getText());
                 assertFalse(sendButton(demo.get()).isEnabled());
             });
             finishModel.countDown();
@@ -126,7 +149,8 @@ class CourseQuestionDemoTest {
             SwingUtilities.invokeAndWait(() -> {
                 String result = textArea(demo.get(), false).getText();
                 if (interrupted) {
-                    assertEquals("The model is unavailable. Please retry.", result);
+                    assertEquals("You\nWhen is the project demo?\n\nAssistant\n"
+                            + "The model is unavailable. Please retry.", result);
                 }
                 else {
                     assertResult(result, "The project demo is on Friday.");
@@ -140,12 +164,16 @@ class CourseQuestionDemoTest {
     }
 
     private static String askQuestion(CourseQuestionView panel, boolean selectPage) throws Exception {
+        return askQuestion(panel, selectPage, "When is the project demo?");
+    }
+
+    private static String askQuestion(CourseQuestionView panel, boolean selectPage, String text) throws Exception {
         SwingUtilities.invokeAndWait(() -> {
             JCheckBox page = components(panel, JCheckBox.class).get(0);
             assertTrue(page.getText().contains("Project Timeline"));
             page.setSelected(selectPage);
             JTextArea question = textArea(panel, true);
-            question.setText("When is the project demo?");
+            question.setText(text);
             sendButton(panel).doClick();
             assertEquals("", question.getText());
         });

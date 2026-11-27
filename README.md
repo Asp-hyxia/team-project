@@ -66,6 +66,8 @@ Run `app.Main` with `--uc2-deepseek` in **Program arguments**. Set `DEEPSEEK_API
 
 Ask the same question as in the offline demo. This mode sends your question and the sample Page text to DeepSeek, displays the answer as it arrives, then adds the sample Page citation. It uses the built-in course and needs no Canvas credentials.
 
+Keep the window open and send a follow-up to continue the conversation. The window shows each question, answer, and source. DeepSeek receives the most recent six completed turns as context and the current turn's Page references as evidence. Closing the window ends the conversation.
+
 ### Live prototype
 
 For a live demo, import `pom.xml` in IntelliJ and run `app.Main`. Add these environment variables to its run configuration.

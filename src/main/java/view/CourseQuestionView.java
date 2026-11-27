@@ -32,6 +32,8 @@ public final class CourseQuestionView extends JPanel {
     private final CourseQuestionViewModel model;
     private final Timer answerUpdates;
     private List<CourseQuestionViewModel.PageOption> displayedPages = List.of();
+    private boolean hasTurns;
+    private int answerStart = -1;
     private boolean showingAnswer;
 
     public CourseQuestionView(CourseQuestionController controller, CourseQuestionViewModel model,
@@ -56,7 +58,7 @@ public final class CourseQuestionView extends JPanel {
             ((DefaultCaret) result.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         }
         JScrollPane answerPane = new JScrollPane(result);
-        answerPane.setBorder(BorderFactory.createTitledBorder("Answer and sources"));
+        answerPane.setBorder(BorderFactory.createTitledBorder("Conversation"));
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, referencePane, answerPane);
         split.setResizeWeight(0.25);
         add(split, BorderLayout.CENTER);
@@ -81,8 +83,7 @@ public final class CourseQuestionView extends JPanel {
             String submittedQuestion = question.getText();
             question.setText("");
             setInputsEnabled(false);
-            result.setText("Reading Page references and generating an answer...");
-            result.setCaretPosition(0);
+            startTurn(submittedQuestion);
             answerUpdates.start();
             controller.ask(courseId, submittedQuestion, selectedIds);
         });
@@ -97,13 +98,29 @@ public final class CourseQuestionView extends JPanel {
         super.removeNotify();
     }
 
+    private void startTurn(String submittedQuestion) {
+        if (hasTurns) {
+            result.append("\n\n");
+        }
+        else {
+            result.setText("");
+        }
+        if (!submittedQuestion.isBlank()) {
+            result.append("You\n" + submittedQuestion.strip() + "\n\nAssistant\n");
+        }
+        answerStart = result.getDocument().getLength();
+        result.append("Reading Page references and generating an answer...");
+        result.setCaretPosition(answerStart);
+        hasTurns = true;
+    }
+
     private void flushAnswerDelta() {
         String delta = model.drainAnswerDelta();
         if (delta.isEmpty()) {
             return;
         }
         if (!showingAnswer) {
-            result.setText("");
+            result.replaceRange("", answerStart, result.getDocument().getLength());
             showingAnswer = true;
         }
         result.append(delta);
@@ -126,15 +143,15 @@ public final class CourseQuestionView extends JPanel {
             references.revalidate();
             references.repaint();
         }
-        String visibleAnswer = showingAnswer ? result.getText() : "";
-        if (showingAnswer && state.result.startsWith(visibleAnswer)) {
-            result.append(state.result.substring(visibleAnswer.length()));
+        if (answerStart >= 0) {
+            result.replaceRange(state.result, answerStart, result.getDocument().getLength());
+            answerStart = -1;
+            showingAnswer = false;
         }
-        else {
+        else if (!hasTurns) {
             result.setText(state.result);
             result.setCaretPosition(0);
         }
-        showingAnswer = false;
         setInputsEnabled(!state.pages.isEmpty());
     }
 
