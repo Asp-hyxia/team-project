@@ -1,7 +1,9 @@
 package use_case.question_answering;
 
 import entity.CourseResource;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,11 +14,14 @@ import use_case.question_answering.CourseQuestionOutputBoundary.Reference;
 
 public final class CourseQuestionInteractor implements CourseQuestionInputBoundary {
     private static final int MAX_REFERENCES = 3;
+    private static final int MAX_HISTORY_TURNS = 6;
 
     private final CourseContentGateway content;
     private final QuestionModelGateway model;
     private final LongFunction<List<String>> defaultReferences;
     private final CourseQuestionOutputBoundary output;
+    private final Deque<AnswerPrompt.Turn> history = new ArrayDeque<>();
+    private long conversationCourseId;
 
     public CourseQuestionInteractor(CourseContentGateway content, QuestionModelGateway model,
             LongFunction<List<String>> defaultReferences, CourseQuestionOutputBoundary output) {
@@ -52,12 +57,17 @@ public final class CourseQuestionInteractor implements CourseQuestionInputBounda
     }
 
     @Override
-    public void ask(CourseQuestionInputData input) {
+    public synchronized void ask(CourseQuestionInputData input) {
         if (input == null || input.courseId <= 0 || input.question == null || input.question.isBlank()) {
             output.presentFailure(Code.INVALID_INPUT);
             return;
         }
 
+        if (conversationCourseId != input.courseId) {
+            history.clear();
+            conversationCourseId = input.courseId;
+        }
+        String question = input.question.strip();
         Set<String> ids = new LinkedHashSet<>(defaultReferences.apply(input.courseId));
         ids.addAll(input.selectedContentIds);
         try {
@@ -74,12 +84,17 @@ public final class CourseQuestionInteractor implements CourseQuestionInputBounda
                 referenceText.add(page.resource.getTitle() + "\n" + page.text);
                 sources.add(referenceOf(page.resource));
             }
-            String answer = model.answer(new AnswerPrompt(input.question.strip(), referenceText),
+            String answer = model.answer(new AnswerPrompt(question, referenceText, List.copyOf(history)),
                     output::presentAnswerDelta);
             if (answer == null || answer.isBlank()) {
                 throw new CourseQuestionException(Code.INVALID_RESPONSE);
             }
-            output.presentAnswer(answer.strip(), List.copyOf(sources));
+            String completedAnswer = answer.strip();
+            output.presentAnswer(completedAnswer, List.copyOf(sources));
+            history.addLast(new AnswerPrompt.Turn(question, completedAnswer));
+            if (history.size() > MAX_HISTORY_TURNS) {
+                history.removeFirst();
+            }
         }
         catch (CourseQuestionException failure) {
             output.presentFailure(failure.getCode());

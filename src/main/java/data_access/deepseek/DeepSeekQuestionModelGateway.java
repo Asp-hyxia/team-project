@@ -69,6 +69,10 @@ public final class DeepSeekQuestionModelGateway implements QuestionModelGateway 
         body.putObject("thinking").put("type", "disabled");
         ArrayNode messages = body.putArray("messages");
         messages.addObject().put("role", "system").put("content", prompt.getSystemInstruction());
+        for (AnswerPrompt.Turn turn : prompt.getHistory()) {
+            messages.addObject().put("role", "user").put("content", turn.question);
+            messages.addObject().put("role", "assistant").put("content", turn.answer);
+        }
         messages.addObject().put("role", "user").put("content", String.join("\n\n", prompt.getUserParts()));
 
         HttpRequest request = HttpRequest.newBuilder(endpoint)

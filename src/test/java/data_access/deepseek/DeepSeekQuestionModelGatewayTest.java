@@ -93,6 +93,24 @@ class DeepSeekQuestionModelGatewayTest {
     }
 
     @Test
+    void sendsCompletedTurnsWithTheirRolesBeforeTheCurrentQuestionAndReferences() throws Exception {
+        AnswerPrompt followUp = new AnswerPrompt("How early should I arrive for that?", List.of("Arrive 10 minutes early."),
+                List.of(new AnswerPrompt.Turn("When is the demo?", "Friday at 2 p.m.")));
+        gateway(200, FIRST_DELTA + REST_OF_ANSWER, null).answer(followUp);
+
+        JsonNode messages = requestBody.get().path("messages");
+        assertEquals(4, messages.size());
+        assertEquals("system", messages.get(0).path("role").asText());
+        assertEquals("user", messages.get(1).path("role").asText());
+        assertEquals("When is the demo?", messages.get(1).path("content").asText());
+        assertEquals("assistant", messages.get(2).path("role").asText());
+        assertEquals("Friday at 2 p.m.", messages.get(2).path("content").asText());
+        assertEquals("user", messages.get(3).path("role").asText());
+        assertEquals("Question\nHow early should I arrive for that?\n\nReference material\nArrive 10 minutes early.",
+                messages.get(3).path("content").asText());
+    }
+
+    @Test
     void translatesHttpFailureWithoutReturningProviderDetails() throws Exception {
         DeepSeekQuestionModelGateway gateway = gateway(429, "{\"error\":\"provider details\"}", null);
 

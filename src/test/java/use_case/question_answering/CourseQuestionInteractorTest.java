@@ -118,6 +118,63 @@ class CourseQuestionInteractorTest {
         assertEquals(List.of(), output.sources);
     }
 
+    @Test
+    void keepsCompletedTurnsForFollowUpsAndUsesOnlyCurrentSourcesForCitations() {
+        content.pages.put("timeline", page(1, "timeline"));
+        content.pages.put("arrival", page(1, "arrival"));
+        CourseQuestionInteractor interactor = new CourseQuestionInteractor(content, prompt -> {
+            switch (prompt.getUserParts().get(0)) {
+                case "Question\nWhen is the demo?":
+                    assertEquals(List.of(), prompt.getHistory());
+                    return "Friday at 2 p.m.";
+                case "Question\nTry a question that fails":
+                    throw new CourseQuestionException(Code.MODEL_UNAVAILABLE);
+                default:
+                    assertEquals(1, prompt.getHistory().size());
+                    AnswerPrompt.Turn previous = prompt.getHistory().get(0);
+                    assertEquals("When is the demo?", previous.question);
+                    assertEquals("Friday at 2 p.m.", previous.answer);
+                    assertEquals(List.of("Question\nWhen should I arrive for that?",
+                            "Reference material\narrival\nReference text"), prompt.getUserParts());
+                    return "Ten minutes before the demo.";
+            }
+        }, courseId -> List.of(), output);
+
+        interactor.ask(new CourseQuestionInputData(1, "When is the demo?", List.of("timeline")));
+        interactor.ask(new CourseQuestionInputData(1, "Try a question that fails", List.of("timeline")));
+        interactor.ask(new CourseQuestionInputData(1, "When should I arrive for that?", List.of("arrival")));
+
+        assertEquals("Ten minutes before the demo.", output.answer);
+        assertEquals(List.of("arrival"), ids(output.sources));
+    }
+
+    @Test
+    void limitsHistoryAndStartsFreshForAnotherCourseOrInteractor() {
+        content.pages.put("one", page(1, "one"));
+        content.pages.put("two", page(2, "two"));
+        List<AnswerPrompt> requests = new ArrayList<>();
+        QuestionModelGateway model = prompt -> {
+            requests.add(prompt);
+            return "Answer";
+        };
+        CourseQuestionInteractor interactor = new CourseQuestionInteractor(content, model,
+                courseId -> List.of(), output);
+        for (int turn = 1; turn <= 8; turn++) {
+            interactor.ask(new CourseQuestionInputData(1, "Question " + turn, List.of("one")));
+        }
+        List<AnswerPrompt.Turn> recent = requests.get(7).getHistory();
+        assertEquals(6, recent.size());
+        assertEquals("Question 2", recent.get(0).question);
+        assertEquals("Question 7", recent.get(5).question);
+
+        interactor.ask(new CourseQuestionInputData(2, "First in course two", List.of("two")));
+        assertEquals(List.of(), requests.get(8).getHistory());
+        CourseQuestionInteractor reopened = new CourseQuestionInteractor(content, model,
+                courseId -> List.of(), output);
+        reopened.ask(new CourseQuestionInputData(1, "First in a new window", List.of("one")));
+        assertEquals(List.of(), requests.get(9).getHistory());
+    }
+
     private static CourseContentGateway.Page page(long courseId, String id) {
         return new CourseContentGateway.Page(resource(courseId, id, CourseResource.Type.PAGE), "Reference text");
     }
