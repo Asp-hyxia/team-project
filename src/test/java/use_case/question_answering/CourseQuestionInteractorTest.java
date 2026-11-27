@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import use_case.find_resources.ResourceListing;
 import use_case.question_answering.CourseQuestionException.Code;
@@ -94,13 +95,25 @@ class CourseQuestionInteractorTest {
     @Test
     void presentsTheModelFailureWithoutPartialCitations() {
         content.pages.put("timeline", page(1, "timeline"));
-        CourseQuestionInteractor interactor = new CourseQuestionInteractor(content, prompt -> {
-            throw new CourseQuestionException(Code.MODEL_UNAVAILABLE);
-        }, courseId -> List.of("timeline"), output);
+        QuestionModelGateway model = new QuestionModelGateway() {
+            @Override
+            public String answer(AnswerPrompt prompt) {
+                return fail("Use the streaming overload");
+            }
+
+            @Override
+            public String answer(AnswerPrompt prompt, Consumer<String> onAnswerDelta) throws CourseQuestionException {
+                onAnswerDelta.accept("Partial answer");
+                throw new CourseQuestionException(Code.MODEL_UNAVAILABLE);
+            }
+        };
+        CourseQuestionInteractor interactor = new CourseQuestionInteractor(content, model,
+                courseId -> List.of("timeline"), output);
 
         interactor.ask(new CourseQuestionInputData(1, "When?", List.of()));
 
         assertEquals(Code.MODEL_UNAVAILABLE, output.failure);
+        assertEquals(List.of("Partial answer"), output.deltas);
         assertNull(output.answer);
         assertEquals(List.of(), output.sources);
     }
@@ -147,6 +160,7 @@ class CourseQuestionInteractorTest {
         private List<Reference> pages = List.of();
         private List<String> warnings = List.of();
         private List<Reference> sources = List.of();
+        private final List<String> deltas = new ArrayList<>();
         private String answer;
         private Code failure;
 
@@ -154,6 +168,11 @@ class CourseQuestionInteractorTest {
         public void presentCatalog(List<Reference> pages, List<String> warnings) {
             this.pages = pages;
             this.warnings = warnings;
+        }
+
+        @Override
+        public void presentAnswerDelta(String delta) {
+            deltas.add(delta);
         }
 
         @Override

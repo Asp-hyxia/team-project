@@ -4,6 +4,7 @@ import java.util.List;
 
 public interface CourseQuestionOutputBoundary {
     void presentCatalog(List<Reference> pages, List<String> warnings);
+    void presentAnswerDelta(String delta);
     void presentAnswer(String answer, List<Reference> sources);
     void presentFailure(CourseQuestionException.Code code);
 

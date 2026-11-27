@@ -74,7 +74,8 @@ public final class CourseQuestionInteractor implements CourseQuestionInputBounda
                 referenceText.add(page.resource.getTitle() + "\n" + page.text);
                 sources.add(referenceOf(page.resource));
             }
-            String answer = model.answer(new AnswerPrompt(input.question.strip(), referenceText));
+            String answer = model.answer(new AnswerPrompt(input.question.strip(), referenceText),
+                    output::presentAnswerDelta);
             if (answer == null || answer.isBlank()) {
                 throw new CourseQuestionException(Code.INVALID_RESPONSE);
             }

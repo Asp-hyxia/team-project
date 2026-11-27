@@ -64,7 +64,7 @@ The UC2 Interactor depends on two Java interfaces. `CourseContentGateway` lists 
 
 Run `app.Main` with `--uc2-deepseek` in **Program arguments**. Set `DEEPSEEK_API_KEY` in the local run configuration and optionally set `DEEPSEEK_MODEL` (defaults to `deepseek-flash`).
 
-Ask the same question as in the offline demo. This mode sends your question and the sample Page text to DeepSeek and displays its answer with the sample Page citation. It uses the built-in course and needs no Canvas credentials.
+Ask the same question as in the offline demo. This mode sends your question and the sample Page text to DeepSeek, displays the answer as it arrives, then adds the sample Page citation. It uses the built-in course and needs no Canvas credentials.
 
 ### Live prototype
 

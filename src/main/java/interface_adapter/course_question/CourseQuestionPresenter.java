@@ -26,6 +26,11 @@ public final class CourseQuestionPresenter implements CourseQuestionOutputBounda
     }
 
     @Override
+    public void presentAnswerDelta(String delta) {
+        viewModel.appendAnswerDelta(delta);
+    }
+
+    @Override
     public void presentAnswer(String answer, List<Reference> sources) {
         StringBuilder result = new StringBuilder(answer).append("\n\nSources:\n");
         for (Reference source : sources) {

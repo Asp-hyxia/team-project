@@ -18,18 +18,27 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.text.DefaultCaret;
 
 public final class CourseQuestionView extends JPanel {
+    private static final int ANSWER_REFRESH_MS = 50;
+
     private final JTextArea question = new JTextArea(3, 45);
     private final JTextArea result = new JTextArea(12, 45);
     private final JButton send = new JButton("Send");
     private final JPanel references = new JPanel();
     private final Map<String, JCheckBox> selections = new LinkedHashMap<>();
+    private final CourseQuestionViewModel model;
+    private final Timer answerUpdates;
     private List<CourseQuestionViewModel.PageOption> displayedPages = List.of();
+    private boolean showingAnswer;
 
     public CourseQuestionView(CourseQuestionController controller, CourseQuestionViewModel model,
             long courseId, String title) {
         super(new BorderLayout(12, 12));
+        this.model = model;
+        answerUpdates = new Timer(ANSWER_REFRESH_MS, event -> flushAnswerDelta());
         setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
         JLabel heading = new JLabel(title);
         heading.setFont(heading.getFont().deriveFont(20f));
@@ -43,6 +52,9 @@ public final class CourseQuestionView extends JPanel {
         result.setEditable(false);
         result.setLineWrap(true);
         result.setWrapStyleWord(true);
+        if (result.getCaret() instanceof DefaultCaret) {
+            ((DefaultCaret) result.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        }
         JScrollPane answerPane = new JScrollPane(result);
         answerPane.setBorder(BorderFactory.createTitledBorder("Answer and sources"));
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, referencePane, answerPane);
@@ -70,6 +82,8 @@ public final class CourseQuestionView extends JPanel {
             question.setText("");
             setInputsEnabled(false);
             result.setText("Reading Page references and generating an answer...");
+            result.setCaretPosition(0);
+            answerUpdates.start();
             controller.ask(courseId, submittedQuestion, selectedIds);
         });
         model.addListener(event -> SwingUtilities.invokeLater(() -> render(model.getState())));
@@ -77,7 +91,27 @@ public final class CourseQuestionView extends JPanel {
         controller.loadCatalog(courseId);
     }
 
+    @Override
+    public void removeNotify() {
+        answerUpdates.stop();
+        super.removeNotify();
+    }
+
+    private void flushAnswerDelta() {
+        String delta = model.drainAnswerDelta();
+        if (delta.isEmpty()) {
+            return;
+        }
+        if (!showingAnswer) {
+            result.setText("");
+            showingAnswer = true;
+        }
+        result.append(delta);
+    }
+
     private void render(CourseQuestionViewModel.State state) {
+        answerUpdates.stop();
+        model.drainAnswerDelta();
         if (!displayedPages.equals(state.pages)) {
             references.removeAll();
             selections.clear();
@@ -92,8 +126,15 @@ public final class CourseQuestionView extends JPanel {
             references.revalidate();
             references.repaint();
         }
-        result.setText(state.result);
-        result.setCaretPosition(0);
+        String visibleAnswer = showingAnswer ? result.getText() : "";
+        if (showingAnswer && state.result.startsWith(visibleAnswer)) {
+            result.append(state.result.substring(visibleAnswer.length()));
+        }
+        else {
+            result.setText(state.result);
+            result.setCaretPosition(0);
+        }
+        showingAnswer = false;
         setInputsEnabled(!state.pages.isEmpty());
     }
 
