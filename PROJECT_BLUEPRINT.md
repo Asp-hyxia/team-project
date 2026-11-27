@@ -4,7 +4,7 @@
 > **Last revised:** November 25, 2026
 >
 > **Branch for proposed changes:** `test`  
-> **Ownership:** Rosalind Zhou (`@RosalindZhou`) leads M1 and UC3. Chris Li (`@chrislxn`) leads M2 and UC2. Yue Tang leads M4 and UC1, Sophia Yang leads UC4, and Ran Yan leads UC5. See [Team Work Split](TEAM_WORK_SPLIT.md).
+> **Ownership:** Rosalind Zhou (`@RosalindZhou`) leads M1 and UC3. Chris Li (`@chrislxn`) leads M2 and UC2. Yue Tang leads M4 and UC1, Sophia Yang leads UC4, Ran Yan leads UC5, and Anqi Feng leads UC6. See [Team Work Split](TEAM_WORK_SPLIT.md).
 
 ## 1. Project Overview
 
@@ -50,7 +50,7 @@ UC3 lets students browse and open Canvas content. UC2 searches the same catalog 
 | UC3 | As a student, I want to browse a course's available resources and open an item, so I can find content across different Canvas layouts. | **Browse and Read Canvas Course Content** | P0 | **Rosalind Zhou (`@RosalindZhou`)** |
 | UC4 | As a student, I want to save useful course sources, so I can reopen them without repeating a search. | **Save and Reopen Course Resources** | P0 | **Sophia Yang (`@sophiaysh16-spec`)** |
 | UC5 | As a student, I want to summarize an announcement and capture dates it mentions, so I can act on updates posted by my instructors. | **Summarize Announcements** | P0 | **Ran Yan (`@Asp-hyxia`)** |
-| UC6 | As a student, I want one timeline of upcoming deadlines with an option to add a task, so I can organize my work across courses. | **Generate Deadline Briefing** | P0 | TBD |
+| UC6 | As a student, I want one timeline of upcoming deadlines with an option to add a task, so I can organize my work across courses. | **Generate Deadline Briefing** | P0 | **Anqi Feng (`@fbgfaqzxm1003`)** |
 
 ### UC1 - Manage Local To-Do
 
@@ -91,7 +91,7 @@ See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md) for co
 - **Failure:** identify the affected course or announcement and let the student retry a failed read or analysis.
 - **Integration:** UC5 owns the course groups, announcement actions, evidence validation, and its own Presenter. A weekly briefing can yield multiple deadline candidates.
 
-### UC6 - Generate Deadline Briefing
+### UC6 - Generate Deadline Briefing (Lead: Anqi Feng)
 
 - **Input:** choose a date range in **Upcoming deadlines**, or select a row to add it to To-Do.
 - **Success:** combine Canvas assignment due dates with UC5's announcement evidence in one ordered timeline. Display their sources and flag ambiguous or conflicting dates for review.

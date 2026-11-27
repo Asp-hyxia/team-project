@@ -26,7 +26,7 @@ All use cases have a student as the actor and begin with an action in the applic
 | UC3 - Browse and Read Canvas Course Content | Add or open a course, then browse its home and resources | Preview a custom HTML home or show native Modules. Expand modules on demand. Continue supported Page links in the preview and open files or module resources in Canvas. | Empty or partial catalog, inaccessible item, or Canvas failure | MVP | Rosalind Zhou (`@RosalindZhou`) |
 | UC4 - Save and Reopen Course Resources | Save a UC3 catalog item or a UC2 answer citation | Store the title and Canvas link. Reopen or remove the saved link after restart. | Invalid link or storage failure | MVP | Sophia Yang (`@sophiaysh16-spec`) |
 | UC5 - Summarize Announcements | Click **Summarize** on one announcement in a course group | Show the summary on that row and add extracted deadline evidence to the shared repository. | No announcements, analysis failure, or deadline save failure | MVP | Ran Yan (`@Asp-hyxia`) |
-| UC6 - Generate Deadline Briefing | View the deadline timeline and choose a date range | Merge assignment due dates and UC5 evidence, show sources and date conflicts, and let the student add a dated item to UC1. | No deadlines, partial retrieval, or conflicting dates | MVP | TBD |
+| UC6 - Generate Deadline Briefing | View the deadline timeline and choose a date range | Merge assignment due dates and UC5 evidence, show sources and date conflicts, and let the student add a dated item to UC1. | No deadlines, partial retrieval, or conflicting dates | MVP | Anqi Feng (`@fbgfaqzxm1003`) |
 
 UC3 supplies the shared course catalog and item reader used by Swing and the UC2 agent. The MVP catalogs Pages and PDFs from the course home, directories, and Modules. Students can select whole resources as references from the same window. See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md) and [shared content contract](PROJECT_BLUEPRINT.md#shared-course-content-contract).
 
@@ -34,7 +34,7 @@ UC2 owns the shared AI module. Use cases that need AI can request a final result
 
 The Dashboard groups announcements by course and shows a shared deadline timeline from Canvas assignments and processed announcements. UC1 saves tasks selected from the timeline. See the [announcement, deadline, saved-source, and To-Do workflows](docs/ACADEMIC_WORKFLOWS.md).
 
-Each of the six members must lead at least one MVP use case. UC1–UC6 are in scope. Remaining leads need team confirmation. See [team work split](TEAM_WORK_SPLIT.md).
+Each of the six members must lead at least one MVP use case. UC1–UC6 are in scope. See [team work split](TEAM_WORK_SPLIT.md).
 
 ## Domain Entities
 

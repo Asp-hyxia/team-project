@@ -3,7 +3,7 @@
 > **Status:** Draft for team approval.  
 > **Last revised:** November 25, 2026.
 >
-> **Work split:** Rosalind Zhou leads M1 and UC3. Chris Li leads M2 and UC2. Yue Tang leads M4 and UC1, Sophia Yang leads UC4, and Ran Yan leads UC5. Remaining owners are TBD.
+> **Work split:** Rosalind Zhou leads M1 and UC3. Chris Li leads M2 and UC2. Yue Tang leads M4 and UC1, Sophia Yang leads UC4, Ran Yan leads UC5, and Anqi Feng leads UC6. Remaining module owners are TBD.
 
 ## 1. Module Ownership
 
@@ -27,9 +27,9 @@ A **module owner** is responsible for its shared contracts, integration readines
 | UC3 - Browse and Read Canvas Course Content | **Rosalind Zhou (`@RosalindZhou`)** | Open a course, follow linked Pages within the HTML preview, and demonstrate native Modules expansion and browser opening in a Modules-based course. |
 | UC4 - Save and Reopen Course Resources | **Sophia Yang (`@sophiaysh16-spec`)** | Save a source from search results or an answer citation, then reopen or remove it after a restart |
 | UC5 - Summarize Announcements    | **Ran Yan (`@Asp-hyxia`)**          | Summarize one announcement in its course group and publish its sourced deadlines to the shared repository. |
-| UC6 - Generate Deadline Briefing | **TBD**                             | Display an ordered timeline from assignments and announcements, flag conflicts, and add one selected item to UC1. |
+| UC6 - Generate Deadline Briefing | **Anqi Feng (`@fbgfaqzxm1003`)**    | Display an ordered timeline from assignments and announcements, flag conflicts, and add one selected item to UC1. |
 
-**Course expectation:** Each member must take the lead on at least one Use Case. The lead should implement most of its relevant Interactor, boundaries, Controller, Presenter, and UI integration, and coordinate any shared dependencies. Module-only contributions do **not** replace this requirement. Assign the remaining leads across the six MVP use cases.
+**Course expectation:** Each member must take the lead on at least one Use Case. The lead should implement most of its relevant Interactor, boundaries, Controller, Presenter, and UI integration, and coordinate any shared dependencies. Module-only contributions do **not** replace this requirement.
 
 ## 3. Shared Interface Decisions
 
@@ -43,7 +43,7 @@ Use [Shared Entities and Interfaces](docs/SHARED_ENTITIES_AND_INTERFACES.md) to 
 | `McpToolGateway`                    | **M2 (Chris Li)** | UC2, UC3 and academic features | Existing Java transport, new catalog and item-read tools planned |
 | `listContent` / `readContent`     | **UC3 (Rosalind Zhou)** supplies Canvas data, **M2 (Chris Li)** integrates the client | Swing catalog and UC2 agent | See [shared content contract](PROJECT_BLUEPRINT.md#shared-course-content-contract) |
 | `DocumentGateway`                   | M3                     | UC2, M1                    | Signature TBD                                      |
-| `DeadlineRepository` | **UC6 lead (TBD)** with **UC5 (Ran Yan)** | UC5 and UC6 | One local store for assignment and announcement evidence |
+| `DeadlineRepository` | **UC6 (Anqi Feng)** with **UC5 (Ran Yan)** | UC5 and UC6 | One local store for assignment and announcement evidence |
 | UC1 create-task boundary | **UC1 (Yue Tang)** | UC1 and UC6 | Receive a deadline ID, due value, title, and source from UC6 |
 | `TaskRepository`                    | **M4 (Yue Tang)**      | UC1 | Persist personal tasks and identify imports by deadline ID |
 | Shared Swing UI / ViewModel contracts | M5 | UC2, UC3, UC5 and UC6 | Agree on catalog selection, loading, and result states |

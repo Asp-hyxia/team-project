@@ -29,7 +29,7 @@ Weekly briefings are ordinary announcement inputs. An announcement can contain s
 
 ## UC6 — Generate a deadline briefing and add tasks
 
-**Lead** TBD. The student opens **Upcoming deadlines** in the Dashboard and selects a date range. UC6 reads Canvas assignment due dates for the selected courses through the shared Canvas adapter. It records that evidence in the same deadline repository that UC5 uses for announcement-derived dates.
+**Lead** Anqi Feng (`@fbgfaqzxm1003`). The student opens **Upcoming deadlines** in the Dashboard and selects a date range. UC6 reads Canvas assignment due dates for the selected courses through the shared Canvas adapter. It records that evidence in the same deadline repository that UC5 uses for announcement-derived dates.
 
 1. Query the shared deadline repository for the requested courses and dates. Show a single timeline in due-date order with the course, item, due date or time, and original source links.
 2. Label evidence as **Canvas assignment** or **From announcement**. Show conflicting dates with both sources and a **Needs review** status. Preserve a date-only deadline as a date. A candidate with no resolvable date can appear in a separate **Needs review** group.
