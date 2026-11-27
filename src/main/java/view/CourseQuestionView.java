@@ -66,9 +66,11 @@ public final class CourseQuestionView extends JPanel {
                     selectedIds.add(id);
                 }
             });
+            String submittedQuestion = question.getText();
+            question.setText("");
             setInputsEnabled(false);
             result.setText("Reading Page references and generating an answer...");
-            controller.ask(courseId, question.getText(), selectedIds);
+            controller.ask(courseId, submittedQuestion, selectedIds);
         });
         model.addListener(event -> SwingUtilities.invokeLater(() -> render(model.getState())));
         render(model.getState());

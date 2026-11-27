@@ -44,10 +44,12 @@ class CourseQuestionDemoTest {
             JCheckBox page = components(panel, JCheckBox.class).get(0);
             assertTrue(page.getText().contains("Project Timeline"));
             page.setSelected(selectPage);
-            components(panel, JTextArea.class).stream().filter(JTextArea::isEditable).findFirst().orElseThrow()
-                    .setText("When is the project demo?");
+            JTextArea question = components(panel, JTextArea.class).stream()
+                    .filter(JTextArea::isEditable).findFirst().orElseThrow();
+            question.setText("When is the project demo?");
             components(panel, JButton.class).stream().filter(button -> "Send".equals(button.getText()))
                     .findFirst().orElseThrow().doClick();
+            assertEquals("", question.getText());
         });
         AtomicReference<String> result = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> result.set(components(panel, JTextArea.class).stream()
