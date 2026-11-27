@@ -47,7 +47,7 @@ Each of the six members must lead at least one MVP use case. UC1–UC6 are in sc
 |--------------------------------------------------------------------------|-------------------------------------------------|------------------------------------------------|
 | [Canvas REST API](https://developerdocs.instructure.com/services/canvas) | Read authorized course resources through MCP    | Yes - course listing and Page reading verified |
 | [Gemini API](https://ai.google.dev/api/generate-content)                 | Answer questions using retrieved course content | Yes - verified with `gemini-3.1-flash-lite`    |
-| [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/) | Answer UC2 questions from sample Page text | Local HTTP tests passed; live check pending |
+| [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/) | Answer UC2 questions from sample Page text | Live streaming verified with `deepseek-flash` in the Swing demo |
 
 
 ## Run and Test
