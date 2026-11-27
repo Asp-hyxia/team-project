@@ -21,7 +21,7 @@ The **Saved** view lists these references after restart. The student can open on
 **Lead** Ran Yan. The Dashboard shows recent authorized announcements in a separate group for each configured course. An announcement row shows its title, posting date, Canvas link, and a **Summarize** button. Each course group can display its own loading or access error so other courses remain usable.
 
 1. The student clicks **Summarize** on one announcement. The UC5 Controller passes its course and announcement IDs to the UC5 Interactor, which retrieves the selected announcement body through the shared Canvas read adapter.
-2. UC5 calls the shared Java AI interface with that announcement. Chris supplies the reusable analysis entry point used by UC5, and Rosalind's M1 Gemini client handles the model request. The response contains the summary and zero or more structured deadline candidates with the relevant source wording.
+2. UC5 calls the planned shared announcement analysis operation with that announcement. Chris owns the shared AI module. UC5 can wait on a worker thread for the final summary and zero or more structured deadline candidates with their supporting wording. See the [shared AI interface](SHARED_ENTITIES_AND_INTERFACES.md#shared-ai-calls-and-streaming).
 3. UC5 validates the candidates against the retrieved text, adds usable evidence to the shared deadline repository, and sends the result to its own Presenter. Swing shows the summary under that announcement. UC6 can then show the new dates in its timeline.
 4. If a model request fails, show retry on the announcement row. If the summary succeeds and saving a deadline fails, show the summary and report the save failure. Repeating the request can safely update the same evidence.
 
@@ -29,7 +29,7 @@ Weekly briefings are ordinary announcement inputs. An announcement can contain s
 
 ## UC6 — Generate a deadline briefing and add tasks
 
-**Lead** TBD. The student opens **Upcoming deadlines** in the Dashboard and selects a date range. UC6 reads Canvas assignment due dates for the selected courses through the shared Canvas adapter. It records that evidence in the same deadline repository that UC5 uses for announcement-derived dates.
+**Lead** Anqi Feng (`@fbgfaqzxm1003`). The student opens **Upcoming deadlines** in the Dashboard and selects a date range. UC6 reads Canvas assignment due dates for the selected courses through the shared Canvas adapter. It records that evidence in the same deadline repository that UC5 uses for announcement-derived dates.
 
 1. Query the shared deadline repository for the requested courses and dates. Show a single timeline in due-date order with the course, item, due date or time, and original source links.
 2. Label evidence as **Canvas assignment** or **From announcement**. Show conflicting dates with both sources and a **Needs review** status. Preserve a date-only deadline as a date. A candidate with no resolvable date can appear in a separate **Needs review** group.

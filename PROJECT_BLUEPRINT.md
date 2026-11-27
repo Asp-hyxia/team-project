@@ -4,7 +4,7 @@
 > **Last revised:** November 25, 2026
 >
 > **Branch for proposed changes:** `test`  
-> **Ownership:** Rosalind Zhou (`@RosalindZhou`) leads M1 and UC3. Chris Li (`@chrislxn`) leads M2 and UC2. Yue Tang leads M4 and UC1, Sophia Yang leads UC4, and Ran Yan leads UC5. See [Team Work Split](TEAM_WORK_SPLIT.md).
+> **Ownership:** Rosalind Zhou (`@RosalindZhou`) leads M1 and UC3. Chris Li (`@chrislxn`) leads M2 and UC2. Yue Tang leads M4 and UC1, Sophia Yang leads UC4, Ran Yan leads UC5, and Anqi Feng leads UC6. See [Team Work Split](TEAM_WORK_SPLIT.md).
 
 ## 1. Project Overview
 
@@ -50,7 +50,7 @@ UC3 lets students browse and open Canvas content. UC2 searches the same catalog 
 | UC3 | As a student, I want to browse a course's available resources and open an item, so I can find content across different Canvas layouts. | **Browse and Read Canvas Course Content** | P0 | **Rosalind Zhou (`@RosalindZhou`)** |
 | UC4 | As a student, I want to save useful course sources, so I can reopen them without repeating a search. | **Save and Reopen Course Resources** | P0 | **Sophia Yang (`@sophiaysh16-spec`)** |
 | UC5 | As a student, I want to summarize an announcement and capture dates it mentions, so I can act on updates posted by my instructors. | **Summarize Announcements** | P0 | **Ran Yan (`@Asp-hyxia`)** |
-| UC6 | As a student, I want one timeline of upcoming deadlines with an option to add a task, so I can organize my work across courses. | **Generate Deadline Briefing** | P0 | TBD |
+| UC6 | As a student, I want one timeline of upcoming deadlines with an option to add a task, so I can organize my work across courses. | **Generate Deadline Briefing** | P0 | **Anqi Feng (`@fbgfaqzxm1003`)** |
 
 ### UC1 - Manage Local To-Do
 
@@ -62,9 +62,9 @@ UC3 lets students browse and open Canvas content. UC2 searches the same catalog 
 ### UC2 - Find and Ask About Canvas Resources (Lead: Chris Li)
 
 - **Input:** a selected course and a search query or question, with optional configured defaults and selected Page or PDF IDs.
-- **Success:** search returns matching catalog entries. For questions, the agent uses configured and selected references, reads whole items by ID, and can choose relevant additional entries from the shared catalog. Swing displays the answer and original links for the sources used.
+- **Success:** search returns matching catalog entries. For questions, the agent uses configured and selected references, reads whole items by ID, and can choose relevant additional entries from the shared catalog. Swing displays text as it arrives when the model supports streaming, then shows original links for the sources used.
 - **Failure:** report empty search results, inaccessible sources, unsupported files or size limits, insufficient evidence, and model or service errors.
-- **Integration:** Chris owns UC2's UI, prompts, source selection, reading limits, and Page/PDF model input. UC2 uses Rosalind's shared M1 Gemini client and the UC3 content contract over MCP. Chris also supplies the shared analysis entry point that returns an announcement summary and deadline candidates to UC5.
+- **Integration:** Chris owns UC2's UI, prompts, source selection, reading limits, and the shared AI operations used across the project. The UC2 branch streams Page answers through DeepSeek using a sample course. Live course reads will use UC3's content contract over MCP. The planned UC5 analysis operation returns an announcement summary and deadline candidates.
 - **Acceptance:** ask about a selected Page or PDF. With a fixture question that requires another item, verify the agent finds it in the catalog and cites both sources. A question answered by the initial item should finish with one read.
 
 ### UC3 - Browse and Read Canvas Course Content (Lead: Rosalind Zhou)
@@ -91,7 +91,7 @@ See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md) for co
 - **Failure:** identify the affected course or announcement and let the student retry a failed read or analysis.
 - **Integration:** UC5 owns the course groups, announcement actions, evidence validation, and its own Presenter. A weekly briefing can yield multiple deadline candidates.
 
-### UC6 - Generate Deadline Briefing
+### UC6 - Generate Deadline Briefing (Lead: Anqi Feng)
 
 - **Input:** choose a date range in **Upcoming deadlines**, or select a row to add it to To-Do.
 - **Success:** combine Canvas assignment due dates with UC5's announcement evidence in one ordered timeline. Display their sources and flag ambiguous or conflicting dates for review.
@@ -100,6 +100,8 @@ See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md) for co
 See [academic workflows](docs/ACADEMIC_WORKFLOWS.md) for UC1, UC4, UC5, and UC6 acceptance cases and shared interfaces.
 
 ## 4. Domain Model (Initial)
+
+See [Shared Entities and Interfaces](docs/SHARED_ENTITIES_AND_INTERFACES.md) for how each type is used across UC1–UC6 and which Java definitions are ready.
 
 | Entity / value object | Suggested fields                                | Purpose                                                     |
 |-----------------------|-------------------------------------------------|-------------------------------------------------------------|
@@ -119,7 +121,9 @@ These are application models, **not** the raw JSON structures returned by Canvas
 flowchart LR
     U3["UC3 · Browse and open in Swing"] -->|"User selects an item"| Content["Shared catalog and item reader"]
     U2["UC2 · Search and ask in Swing"] -->|"Agent inspects catalog and requests item IDs"| Content
-    U2 -->|"Question and retrieved sources"| AI["M1 · Shared Gemini client"]
+    U2 -->|"Question and retrieved sources"| AI["UC2 · Shared AI operations"]
+    U5["UC5 · Announcement summaries"] -.->|"Planned analysis of one announcement"| AI
+    AI -->|"Text increments and final result"| U2
     Content --> Client["M2 · Java MCP client"]
     Client --> Server["UC3 · Canvas MCP server and REST adapter"]
     Server --> Canvas["Canvas REST API"]
@@ -131,7 +135,8 @@ Each Swing flow goes through its Controller, Interactor, Presenter, and ViewMode
 
 | Module                                   | Description                                                                                        | Main interface / integration point  | Owner                               |
 |------------------------------------------|----------------------------------------------------------------------------------------------------|-------------------------------------|-------------------------------------|
-| **M1 - AI Agent Core**                   | Shared Gemini requests, tool-call protocol, and provider error handling | `AgentGateway` | **Rosalind Zhou (`@RosalindZhou`)** |
+| **M1 - AI Agent Core**                   | Gemini requests, tool-call protocol, and provider error handling for the original Page flow | `AgentGateway` | **Rosalind Zhou (`@RosalindZhou`)** |
+| **UC2 - Shared AI operations**          | Text generation with final or streamed output, and typed operations for other use cases as needed | `QuestionModelGateway` for Page questions. Announcement analysis is planned. | **Chris Li (`@chrislxn`)** |
 | **M2 - MCP Client Integration**          | Java MCP client and integration with UC3's catalog and read contracts | `McpToolGateway` | **Chris Li (`@chrislxn`)** |
 | **M3 - Document Handling**               | PDF validation and document handoff | `DocumentGateway` (planned) | TBD |
 | **M4 - Local Storage & To-Do**           | Task Entity, local persistence, task operations                                                    | `TaskRepository`                    | **Yue Tang (`@happy-soup`)**        |
@@ -164,7 +169,8 @@ The catalog holds metadata. In-app Page previews and the agent read item content
 
 ### Other shared contracts
 
-- `AgentGateway`: shared model access for course questions and announcement analysis. M1 and UC2 agree on model input formats and error mapping.
+- `QuestionModelGateway`: UC2's provider-neutral text port. The same call can expose text increments and return the final answer. See the [shared AI interface](docs/SHARED_ENTITIES_AND_INTERFACES.md#shared-ai-calls-and-streaming).
+- `AgentGateway`: M1's model port for the original single-Page Gemini flow.
 - `McpToolGateway`: `listTools()` and `callTool(name, args)` provide controlled access to approved MCP functions.
 - `DeadlineRepository`: store announcement evidence from UC5 and assignment evidence from UC6, and return the merged timeline for UC6.
 - UC1 create-task boundary: accept a deadline reference from UC6. UC1 uses its `TaskRepository` to save, find, list, and delete local tasks.
@@ -173,11 +179,17 @@ The catalog holds metadata. In-app Page previews and the agent read item content
 
 The current Java prototype exposes `list_courses`, `list_resources`, and `read_page`. The unified catalog, PDF reads, and model-selected additional reads are planned extensions.
 
+### Streaming in Swing
+
+Any use case that needs AI can call UC2's shared AI module using a Java interface injected by the composition root. The caller keeps its own Interactor and Presenter. Each AI workflow can show a loading state and wait for the final result, or opt in to progressive text. For example, UC2 displays answer text as it arrives, while UC5 can wait for a complete summary and validated deadline candidates.
+
+Run the model request and read incremental text on a worker thread. The Presenter buffers text, and the view appends batches on Swing's Event Dispatch Thread. In UC2 a timer refreshes about every 50 ms. The final result supplies citations or other validated data, and a failure ends the preview and restores the controls. See the [shared callback and completion contract](docs/SHARED_ENTITIES_AND_INTERFACES.md#shared-ai-calls-and-streaming).
+
 ## 6. API Integration, Persistence and Security
 
 **Canvas.** UC3 owns the read-only Canvas REST adapter and Java MCP tool handlers. M2 integrates the Java client. See the [Canvas developer documentation](https://developerdocs.instructure.com/services/canvas).
 
-**LLM provider.** M1 supplies the shared Gemini client. The current prototype supports Page answers. The revised UC2 also needs PDF input and tool requests for additional catalog items.
+**LLM providers.** The original Page prototype uses M1's Gemini client. The UC2 branch supports streaming Page answers through its DeepSeek adapter. PDF input and model-requested reads of additional catalog items are planned.
 
 **Local persistence.** Personal tasks, saved links, and shared deadline records can use JSON or another simple local format behind repositories. Canvas cache entries should show their fetch timestamps and freshness.
 
@@ -190,7 +202,7 @@ The current Java prototype exposes `list_courses`, `list_resources`, and `read_p
 3. UC2 reads the selected source along with any configured default references. If the question needs information about evaluation, the agent can choose Project Expectations from the same catalog.
 4. Swing shows the answer and links to the retrieved sources. Repeat with a permitted PDF to verify the document path.
 
-Use fixture catalogs to verify browse, access errors, and the choice to read another item. Use a live smoke test to verify the Canvas and Gemini integrations.
+Use fixture catalogs to verify browsing, access errors, and the choice to read another item. Verify the Canvas integration and run a live DeepSeek streaming smoke test.
 
 ## 8. Testing and Course Timeline
 
@@ -209,7 +221,7 @@ Course sources: [Project Timeline](https://q.utoronto.ca/courses/444184/pages/pr
 - [ ] Review the acceptance criteria for the six MVP use cases.
 - [ ] Assign every remaining Module Owner and Use Case Lead (`TBD` entries).
 - [ ] Agree on MCP payloads for the shared catalog and item reader, including pagination and source permissions.
-- [ ] Confirm Gemini PDF input and model-driven reads against the shared content contract.
+- [ ] Confirm PDF input and model-driven reads against the shared content contract.
 - [ ] Agree on the shared Java interface signatures and error response types.
 - [ ] Decide the local To-Do storage format and whether optional Canvas caching belongs in the MVP.
 
