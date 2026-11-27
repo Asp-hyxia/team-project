@@ -33,6 +33,8 @@ A **module owner** is responsible for its shared contracts, integration readines
 
 ## 3. Shared Interface Decisions
 
+Use [Shared Entities and Interfaces](docs/SHARED_ENTITIES_AND_INTERFACES.md) to check the current Java signatures and planned handoffs before implementing a shared adapter.
+
 | Interface / contract                | Responsible module     | Consumers                  | Decision status                                    |
 |-------------------------------------|------------------------|----------------------------|----------------------------------------------------|
 | `AgentGateway`                      | **M1 (Rosalind Zhou)** | UC2 and shared announcement analysis for UC5 | Agree on Page/PDF input and model responses |

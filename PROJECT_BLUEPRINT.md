@@ -101,6 +101,8 @@ See [academic workflows](docs/ACADEMIC_WORKFLOWS.md) for UC1, UC4, UC5, and UC6 
 
 ## 4. Domain Model (Initial)
 
+See [Shared Entities and Interfaces](docs/SHARED_ENTITIES_AND_INTERFACES.md) for how each type is used across UC1–UC6 and which Java definitions are ready.
+
 | Entity / value object | Suggested fields                                | Purpose                                                     |
 |-----------------------|-------------------------------------------------|-------------------------------------------------------------|
 | `Task`                | `id`, `title`, optional due date or time, `completed`, optional deadline ID and source link | Locally persisted personal task and its completion behavior |

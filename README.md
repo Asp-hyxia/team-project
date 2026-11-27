@@ -36,6 +36,8 @@ Each of the six members must lead at least one MVP use case. UC1–UC6 are in sc
 
 ## Domain Entities
 
+See [Shared Entities and Interfaces](docs/SHARED_ENTITIES_AND_INTERFACES.md) for the six-use-case data model, Java contracts, and implementation status.
+
 | Entity           | Instance variables                                         | Relevant methods                                                        |
 |------------------|------------------------------------------------------------|-------------------------------------------------------------------------|
 | `Course`         | `id`, `name`, `code`                                       | `getId()`, `getName()`, `getCode()`                                     |
