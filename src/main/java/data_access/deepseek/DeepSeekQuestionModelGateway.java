@@ -5,12 +5,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import use_case.question_answering.AnswerPrompt;
 import use_case.question_answering.CourseQuestionException;
 import use_case.question_answering.CourseQuestionException.Code;
@@ -25,14 +32,16 @@ public final class DeepSeekQuestionModelGateway implements QuestionModelGateway 
     private final String model;
     private final URI endpoint;
     private final HttpClient client;
+    private final Duration streamTimeout;
     private final ObjectMapper json = new ObjectMapper();
 
     public static DeepSeekQuestionModelGateway fromEnvironment() throws CourseQuestionException {
         return new DeepSeekQuestionModelGateway(System.getenv("DEEPSEEK_API_KEY"), System.getenv("DEEPSEEK_MODEL"),
-                CHAT_COMPLETIONS, HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build());
+                CHAT_COMPLETIONS, HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build(),
+                Duration.ofSeconds(90));
     }
 
-    DeepSeekQuestionModelGateway(String apiKey, String model, URI endpoint, HttpClient client)
+    DeepSeekQuestionModelGateway(String apiKey, String model, URI endpoint, HttpClient client, Duration streamTimeout)
             throws CourseQuestionException {
         if (apiKey == null || !apiKey.strip().matches("[!-~]+")) {
             throw new CourseQuestionException(Code.MODEL_UNAVAILABLE);
@@ -41,16 +50,22 @@ public final class DeepSeekQuestionModelGateway implements QuestionModelGateway 
         this.model = model == null || model.isBlank() ? DEFAULT_MODEL : model.strip();
         this.endpoint = endpoint;
         this.client = client;
+        this.streamTimeout = streamTimeout;
     }
 
     @Override
     public String answer(AnswerPrompt prompt) throws CourseQuestionException {
+        return answer(prompt, delta -> { });
+    }
+
+    @Override
+    public String answer(AnswerPrompt prompt, Consumer<String> onAnswerDelta) throws CourseQuestionException {
         if (prompt == null) {
             throw new CourseQuestionException(Code.INVALID_INPUT);
         }
         ObjectNode body = json.createObjectNode();
         body.put("model", model);
-        body.put("stream", false);
+        body.put("stream", true);
         body.putObject("thinking").put("type", "disabled");
         ArrayNode messages = body.putArray("messages");
         messages.addObject().put("role", "system").put("content", prompt.getSystemInstruction());
@@ -60,11 +75,17 @@ public final class DeepSeekQuestionModelGateway implements QuestionModelGateway 
                 .timeout(Duration.ofSeconds(45))
                 .header("Authorization", "Bearer " + apiKey)
                 .header("Content-Type", "application/json")
+                .header("Accept", "text/event-stream")
                 .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                 .build();
-        HttpResponse<String> response;
         try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            try (InputStream stream = response.body()) {
+                if (response.statusCode() != 200) {
+                    throw new CourseQuestionException(Code.MODEL_UNAVAILABLE);
+                }
+                return readStream(stream, onAnswerDelta);
+            }
         }
         catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
@@ -73,29 +94,84 @@ public final class DeepSeekQuestionModelGateway implements QuestionModelGateway 
         catch (IOException exception) {
             throw new CourseQuestionException(Code.MODEL_UNAVAILABLE);
         }
-        if (response.statusCode() != 200) {
-            throw new CourseQuestionException(Code.MODEL_UNAVAILABLE);
-        }
-        return readAnswer(response.body());
     }
 
-    private String readAnswer(String response) throws CourseQuestionException {
-        JsonNode result;
+    private String readStream(InputStream stream, Consumer<String> onAnswerDelta)
+            throws IOException, CourseQuestionException {
+        // The HTTP request timeout ends once the response body stream is available.
+        CompletableFuture<Void> finished = new CompletableFuture<>();
+        finished.orTimeout(streamTimeout.toMillis(), TimeUnit.MILLISECONDS).whenCompleteAsync((unused, failure) -> {
+            if (failure != null) {
+                try {
+                    stream.close();
+                }
+                catch (IOException ignored) {
+                    // The worker still reports the stream timeout.
+                }
+            }
+        });
         try {
-            result = json.readTree(response);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+            StringBuilder answer = new StringBuilder();
+            boolean stopped = false;
+            String event;
+            while ((event = readEvent(reader)) != null && !"[DONE]".equals(event)) {
+                JsonNode choice = readChoice(event);
+                String finishReason = choice.path("finish_reason").asText("");
+                if (!finishReason.isEmpty()) {
+                    if (!"stop".equals(finishReason)) {
+                        throw new CourseQuestionException(Code.INVALID_RESPONSE);
+                    }
+                    stopped = true;
+                }
+                JsonNode content = choice.path("delta").path("content");
+                if (content.isTextual() && !content.asText().isEmpty()) {
+                    String delta = content.asText();
+                    answer.append(delta);
+                    onAnswerDelta.accept(delta);
+                }
+            }
+            String text = answer.toString();
+            if (!finished.complete(null)) {
+                throw new CourseQuestionException(Code.MODEL_UNAVAILABLE);
+            }
+            if (event != null && stopped && !text.isBlank()) {
+                return text;
+            }
+            throw new CourseQuestionException(Code.INVALID_RESPONSE);
+        }
+        finally {
+            finished.complete(null);
+        }
+    }
+
+    private static String readEvent(BufferedReader reader) throws IOException {
+        StringBuilder data = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("data:")) {
+                if (data.length() > 0) {
+                    data.append('\n');
+                }
+                data.append(line.substring("data:".length()).stripLeading());
+            }
+            else if (line.isEmpty() && data.length() > 0) {
+                return data.toString();
+            }
+        }
+        return null;
+    }
+
+    private JsonNode readChoice(String event) throws CourseQuestionException {
+        try {
+            JsonNode chunk = json.readTree(event);
+            if (chunk != null && chunk.path("choices").isArray()) {
+                return chunk.path("choices").path(0);
+            }
         }
         catch (JsonProcessingException exception) {
             throw new CourseQuestionException(Code.INVALID_RESPONSE);
         }
-        if (result == null) {
-            throw new CourseQuestionException(Code.INVALID_RESPONSE);
-        }
-        JsonNode choice = result.path("choices").path(0);
-        JsonNode answer = choice.path("message").path("content");
-        if (!"stop".equals(choice.path("finish_reason").asText()) || !answer.isTextual()
-                || answer.asText().isBlank()) {
-            throw new CourseQuestionException(Code.INVALID_RESPONSE);
-        }
-        return answer.asText();
+        throw new CourseQuestionException(Code.INVALID_RESPONSE);
     }
 }
