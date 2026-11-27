@@ -30,6 +30,8 @@ All use cases have a student as the actor and begin with an action in the applic
 
 UC3 supplies the shared course catalog and item reader used by Swing and the UC2 agent. The MVP catalogs Pages and PDFs from the course home, directories, and Modules. Students can select whole resources as references from the same window. See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md) and [shared content contract](PROJECT_BLUEPRINT.md#shared-course-content-contract).
 
+UC2 owns the shared AI module. Use cases that need AI can request a final result or opt in to progressive text through their own Presenter. See the [AI streaming design](PROJECT_BLUEPRINT.md#streaming-in-swing) and [shared AI interface](docs/SHARED_ENTITIES_AND_INTERFACES.md#shared-ai-calls-and-streaming).
+
 The Dashboard groups announcements by course and shows a shared deadline timeline from Canvas assignments and processed announcements. UC1 saves tasks selected from the timeline. See the [announcement, deadline, saved-source, and To-Do workflows](docs/ACADEMIC_WORKFLOWS.md).
 
 Each of the six members must lead at least one MVP use case. UC1–UC6 are in scope. Remaining leads need team confirmation. See [team work split](TEAM_WORK_SPLIT.md).

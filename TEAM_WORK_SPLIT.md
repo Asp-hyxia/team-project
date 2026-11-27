@@ -37,8 +37,9 @@ Use [Shared Entities and Interfaces](docs/SHARED_ENTITIES_AND_INTERFACES.md) to 
 
 | Interface / contract                | Responsible module     | Consumers                  | Decision status                                    |
 |-------------------------------------|------------------------|----------------------------|----------------------------------------------------|
-| `AgentGateway`                      | **M1 (Rosalind Zhou)** | UC2 and shared announcement analysis for UC5 | Agree on Page/PDF input and model responses |
-| Announcement analysis | **Chris Li** with **UC5 (Ran Yan)** | UC5 | One announcement in, summary and deadline candidates out |
+| `AgentGateway`                      | **M1 (Rosalind Zhou)** | Original single-Page Gemini flow | Existing final-answer model port |
+| Shared AI operations | **UC2 (Chris Li)** | Any use case that needs AI | `QuestionModelGateway` supports final text and optional increments. See the [shared AI interface](docs/SHARED_ENTITIES_AND_INTERFACES.md#shared-ai-calls-and-streaming). |
+| Announcement analysis | **Chris Li** with **UC5 (Ran Yan)** | UC5 | Planned typed final result with a summary and deadline candidates |
 | `McpToolGateway`                    | **M2 (Chris Li)** | UC2, UC3 and academic features | Existing Java transport, new catalog and item-read tools planned |
 | `listContent` / `readContent`     | **UC3 (Rosalind Zhou)** supplies Canvas data, **M2 (Chris Li)** integrates the client | Swing catalog and UC2 agent | See [shared content contract](PROJECT_BLUEPRINT.md#shared-course-content-contract) |
 | `DocumentGateway`                   | M3                     | UC2, M1                    | Signature TBD                                      |
@@ -53,8 +54,8 @@ Use [Shared Entities and Interfaces](docs/SHARED_ENTITIES_AND_INTERFACES.md) to 
 ## 4. Use Case Handoffs
 
 - **Rosalind, UC3.** Own course setup, the browsing UI, the Canvas REST adapter, and MCP tool handlers. Build the shared catalog, preview Pages as HTML, and use native Modules with browser opens for module resources. Verify access on each content request. See the [UC3 browsing and navigation design](docs/UC3_CANVAS_BROWSING.md).
-- **Chris, UC2.** Own search and Page/PDF question answering in Swing. Use the shared catalog through M2, decide which entries the agent can request, and display citations for retrieved sources.
-- **Rosalind, M1.** Supply reusable Gemini requests, tool-call handling, and model errors. Chris defines source selection and reading limits for UC2.
+- **Chris, UC2.** Own search and Page/PDF question answering in Swing and the shared AI module. Use the shared catalog through M2, decide which entries the agent can request, and display streamed answers and citations.
+- **Rosalind, M1.** Maintain the Gemini requests, tool-call handling, and model errors for the original Page flow. Chris defines source selection and reading limits for the revised UC2.
 - **Integration.** Use the course ID, shared catalog, configured defaults, and selected reference IDs for questions in the same Swing window. Develop against a fixture catalog and typed read results while the live Canvas adapter is in progress.
 
 - **Sophia, UC4.** Receive a title and source link from the course catalog or an answer citation. Own the Saved view and local link persistence.
