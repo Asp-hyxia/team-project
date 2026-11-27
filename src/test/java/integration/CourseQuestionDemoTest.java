@@ -14,9 +14,11 @@ import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.StyleConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -72,6 +74,14 @@ class CourseQuestionDemoTest {
         String transcript = askQuestion(demo.get(), true, "What time is it?");
         assertTrue(transcript.startsWith(firstTurn + "\n\nYou\nWhat time is it?\n\nAssistant\n"));
         assertResult(transcript.substring(firstTurn.length()), "It starts at 2:00 p.m.");
+        SwingUtilities.invokeAndWait(() -> {
+            JTextPane conversation = conversation(demo.get());
+            String url = "https://canvas.example.edu/courses/1/pages/project-timeline";
+            assertTrue(StyleConstants.isUnderline(conversation.getStyledDocument()
+                    .getCharacterElement(transcript.indexOf(url)).getAttributes()));
+            assertTrue(StyleConstants.isUnderline(conversation.getStyledDocument()
+                    .getCharacterElement(transcript.lastIndexOf(url)).getAttributes()));
+        });
     }
 
     @ParameterizedTest
@@ -115,7 +125,7 @@ class CourseQuestionDemoTest {
                         catalogReady.countDown();
                     }
                 });
-                JTextArea answer = textArea(panel, false);
+                JTextPane answer = conversation(panel);
                 answer.getDocument().addDocumentListener(new DocumentListener() {
                     @Override public void insertUpdate(DocumentEvent event) {
                         if (answer.getText().endsWith("\nAssistant\nThe project demo")) {
@@ -135,19 +145,19 @@ class CourseQuestionDemoTest {
                         requestFinished.countDown();
                     }
                 });
-                textArea(panel, true).setText("When is the project demo?");
+                questionInput(panel).setText("When is the project demo?");
                 send.doClick();
             });
             assertTrue(deltaDisplayed.await(5, TimeUnit.SECONDS));
             SwingUtilities.invokeAndWait(() -> {
                 assertEquals("You\nWhen is the project demo?\n\nAssistant\nThe project demo",
-                        textArea(demo.get(), false).getText());
+                        conversation(demo.get()).getText());
                 assertFalse(sendButton(demo.get()).isEnabled());
             });
             finishModel.countDown();
             assertTrue(requestFinished.await(5, TimeUnit.SECONDS));
             SwingUtilities.invokeAndWait(() -> {
-                String result = textArea(demo.get(), false).getText();
+                String result = conversation(demo.get()).getText();
                 if (interrupted) {
                     assertEquals("You\nWhen is the project demo?\n\nAssistant\n"
                             + "The model is unavailable. Please retry.", result);
@@ -172,13 +182,13 @@ class CourseQuestionDemoTest {
             JCheckBox page = components(panel, JCheckBox.class).get(0);
             assertTrue(page.getText().contains("Project Timeline"));
             page.setSelected(selectPage);
-            JTextArea question = textArea(panel, true);
+            JTextArea question = questionInput(panel);
             question.setText(text);
             sendButton(panel).doClick();
             assertEquals("", question.getText());
         });
         AtomicReference<String> result = new AtomicReference<>();
-        SwingUtilities.invokeAndWait(() -> result.set(textArea(panel, false).getText()));
+        SwingUtilities.invokeAndWait(() -> result.set(conversation(panel).getText()));
         return result.get();
     }
 
@@ -187,9 +197,12 @@ class CourseQuestionDemoTest {
                 .findFirst().orElseThrow();
     }
 
-    private static JTextArea textArea(CourseQuestionView panel, boolean editable) {
-        return components(panel, JTextArea.class).stream().filter(area -> area.isEditable() == editable)
-                .findFirst().orElseThrow();
+    private static JTextArea questionInput(CourseQuestionView panel) {
+        return components(panel, JTextArea.class).get(0);
+    }
+
+    private static JTextPane conversation(CourseQuestionView panel) {
+        return components(panel, JTextPane.class).get(0);
     }
 
     private static void assertResult(String result, String expectedAnswer) {

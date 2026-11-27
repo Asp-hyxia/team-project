@@ -19,13 +19,12 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.text.DefaultCaret;
 
 public final class CourseQuestionView extends JPanel {
     private static final int ANSWER_REFRESH_MS = 50;
 
     private final JTextArea question = new JTextArea(3, 45);
-    private final JTextArea result = new JTextArea(12, 45);
+    private final ConversationPane result = new ConversationPane();
     private final JButton send = new JButton("Send");
     private final JPanel references = new JPanel();
     private final Map<String, JCheckBox> selections = new LinkedHashMap<>();
@@ -51,12 +50,6 @@ public final class CourseQuestionView extends JPanel {
         referencePane.setBorder(BorderFactory.createTitledBorder("Page references"));
         referencePane.setPreferredSize(new Dimension(285, 0));
 
-        result.setEditable(false);
-        result.setLineWrap(true);
-        result.setWrapStyleWord(true);
-        if (result.getCaret() instanceof DefaultCaret) {
-            ((DefaultCaret) result.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
-        }
         JScrollPane answerPane = new JScrollPane(result);
         answerPane.setBorder(BorderFactory.createTitledBorder("Conversation"));
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, referencePane, answerPane);
@@ -106,7 +99,7 @@ public final class CourseQuestionView extends JPanel {
             result.setText("");
         }
         if (!submittedQuestion.isBlank()) {
-            result.append("You\n" + submittedQuestion.strip() + "\n\nAssistant\n");
+            result.appendWithLinks("You\n" + submittedQuestion.strip() + "\n\nAssistant\n");
         }
         answerStart = result.getDocument().getLength();
         result.append("Reading Page references and generating an answer...");
@@ -120,7 +113,7 @@ public final class CourseQuestionView extends JPanel {
             return;
         }
         if (!showingAnswer) {
-            result.replaceRange("", answerStart, result.getDocument().getLength());
+            result.truncate(answerStart);
             showingAnswer = true;
         }
         result.append(delta);
@@ -144,7 +137,8 @@ public final class CourseQuestionView extends JPanel {
             references.repaint();
         }
         if (answerStart >= 0) {
-            result.replaceRange(state.result, answerStart, result.getDocument().getLength());
+            result.truncate(answerStart);
+            result.appendWithLinks(state.result);
             answerStart = -1;
             showingAnswer = false;
         }
